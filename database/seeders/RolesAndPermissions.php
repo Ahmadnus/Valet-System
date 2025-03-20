@@ -22,7 +22,7 @@ class RolesAndPermissions extends Seeder
     public function run(): void
     {
 
-     // Ensure roles exist
+
      $roles = [
         'valet_customer' => Role::firstOrCreate(['name' => 'valet_customer']),
         'valet_agent' => Role::firstOrCreate(['name' => 'valet_agent']),
@@ -31,7 +31,7 @@ class RolesAndPermissions extends Seeder
         'platform_manager' => Role::firstOrCreate(['name' => 'platform_manager']),
     ];
 
-    // Define user data and dynamically create userable instances
+
     $users = [
         [
             'name' => 'Customer User',
@@ -39,7 +39,7 @@ class RolesAndPermissions extends Seeder
             'phone_number' => '1234567890',
             'password' => Hash::make('password'),
             'role' => 'valet_customer',
-            'userable' => Customer::create([]), // Creates a unique instance
+            'userable' => Customer::create([]),
         ],
         [
             'name' => 'Agent User',
@@ -75,16 +75,16 @@ class RolesAndPermissions extends Seeder
         ],
     ];
 
-    // Create users and assign roles
+
     foreach ($users as $userData) {
-        // Create user and link to unique userable
+
         $user = User::create([
             'name' => $userData['name'],
             'email' => $userData['email'],
             'phone_number' => $userData['phone_number'],
             'password' => $userData['password'],
-            'userable_id' => $userData['userable']->id, // Unique userable_id
-            'userable_type' => get_class($userData['userable']), // Correct model type
+            'userable_id' => $userData['userable']->id,
+            'userable_type' => get_class($userData['userable']),
         ]);
 
         // Assign role to user

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Request\RequestResource;
 use App\Services\Requests\ParkingRequestService;
 use Illuminate\Http\Request;
 use Exception;
@@ -19,9 +20,9 @@ class RequestController extends Controller
     {
         try {
             $parkingRequest = $this->parkingRequestService->createParkingRequest($request->all());
-            return response()->json(['success' => true, 'message' => 'Parking request sent successfully!', 'data' => $parkingRequest], 201);
+            return response()->json(new RequestResource($parkingRequest), 201);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 
@@ -29,9 +30,9 @@ class RequestController extends Controller
     {
         try {
             $parkingRequest = $this->parkingRequestService->acceptParkingRequest($requestId);
-            return response()->json(['success' => true, 'message' => 'Parking request accepted successfully!', 'data' => $parkingRequest], 200);
+            return response()->json(new RequestResource($parkingRequest), 200);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 
@@ -39,20 +40,19 @@ class RequestController extends Controller
     {
         try {
             $parkingRequest = $this->parkingRequestService->requestCarPreparation($requestId);
-            return response()->json(['success' => true, 'message' => 'Car preparation requested successfully!', 'data' => $parkingRequest], 200);
+            return response()->json(new RequestResource($parkingRequest), 200);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 
     public function completeParkingRequest(int $requestId, Request $request)
     {
         try {
-            $plateNumber = $request->input('plate_number'); // Get plate number from request
-            $parkingRequest = $this->parkingRequestService->completeParkingRequest($requestId, $plateNumber);
-            return response()->json(['success' => true, 'message' => 'Parking request completed successfully!', 'data' => $parkingRequest], 200);
+            $parkingRequest = $this->parkingRequestService->completeParkingRequest($requestId, $request->plate_number);
+            return response()->json(new RequestResource($parkingRequest), 200);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 }

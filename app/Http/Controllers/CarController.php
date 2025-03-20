@@ -4,78 +4,82 @@ namespace App\Http\Controllers;
 
 use App\Models\Car;
 use App\Services\CarService;
-use App\Http\Requests\CarRequsets\StoreCarRequest;
-use App\Http\Requests\StoreCarRequest as RequestsStoreCarRequest;
+use App\Http\Requests\StoreCarRequest;
+
 use App\Http\Requests\UpdateCarRequest;
+use App\Http\Resources\Car\CarResource;
 use Illuminate\Support\Facades\Auth;
-
+use Exception;
 class CarController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     */
-    public function __construct(private CarService $carService)
-    {
+{   protected $carService;
 
+    public function __construct(CarService $carService)
+    {
+        $this->carService = $carService;
     }
 
+    /**
+     * Display a list of the user's cars.
+     */
     public function index()
     {
         $cars = Auth::user()->cars;
-        return response()->json($cars);
+        return CarResource::collection($cars);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Store a newly created car.
      */
-    public function create()
+    public function store(StoreCarRequest $request)
     {
-        //
+        try {
+            $car = $this->carService->store($request->validated());
+            return response()->json([
+                'message' => 'Car added successfully',
+                'car' => new CarResource($car),
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
 
     /**
-     * Store a newly created resource in storage.
-     */
-    public function store(RequestsStoreCarRequest $request)
-    {
-        $car = $this->carService->store($request->validated());
-
-        return response()->json([
-            'message' => 'Car added successfully',
-            'car' => $car
-        ], 201);
-    }
-
-    /**
-     * Display the specified resource.
+     * Display a specific car.
      */
     public function show(Car $car)
     {
-        //
+        if ($car->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        return new CarResource($car);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Car $car)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * Update the specified car.
      */
     public function update(UpdateCarRequest $request, Car $car)
     {
-
-        return $this->carService->update($request, $car);
+        try {
+            $this->carService->update($request, $car);
+            return response()->json([
+                'message' => 'Car updated successfully',
+                'car' => new CarResource($car),
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
+
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified car.
      */
     public function destroy(Car $car)
     {
-        return $this->carService->delete($car);
-
+        try {
+            $this->carService->delete($car);
+            return response()->json(['message' => 'Car deleted successfully'], 200);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 403);
+        }
     }
 }

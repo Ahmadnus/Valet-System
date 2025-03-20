@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('plate_number');
             $table->string('key_box');
             $table->morphs('cartypeable');
-            $table->text('rejection_reason'); // Store reason for rejection
+            $table->text('rejection_reason');
             $table->timestamps();
         });
     }

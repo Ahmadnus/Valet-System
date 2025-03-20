@@ -22,7 +22,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'type' => class_basename($this->userable_type),
             'created_at' => $this->create_at,
-            'userable' => $this->whenLoaded('userable'),
+            'userable_type' => class_basename($this->userable_type),
         ];
 
 

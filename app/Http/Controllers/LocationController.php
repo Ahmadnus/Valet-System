@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\FindNearestLocationRequest;
+use App\Http\Resources\Location\LocationResource;
 use App\Models\Location;
 use Illuminate\Http\Request;
 
@@ -29,12 +30,12 @@ class LocationController extends Controller
     ->orderBy("distance", "asc") // Order by nearest
     ->get();
 
-    // Check if no locations are found
     if ($locations->isEmpty()) {
         return response()->json(['message' => 'No locations found'], 404);
     }
 
-    // Return all locations ordered by distance
-    return response()->json(['nearest_locations' => $locations]);
+    return response()->json([
+        'nearest_locations' => LocationResource::collection($locations)
+    ]);
 }
 }

@@ -6,6 +6,7 @@ use App\Models\Manager;
 use App\Http\Requests\StoreManagerRequest;
 use App\Http\Requests\UpdateManagerRequest;
 use App\Http\Requests\Manager\RoleCountRequest;
+use App\Http\Resources\UserResource;
 use App\Models\Agent;
 use App\Models\Customer;
 use App\Models\Host;
@@ -25,7 +26,7 @@ class ManagerController extends Controller
     public function index()
     {
         $users = User::with('roles')->get();
-        return response()->json($users);
+        return UserResource::collection($users);
     }
     public function show($id)
     {
@@ -83,8 +84,8 @@ class ManagerController extends Controller
             'email' => $validated['email'],
             'phone_number' => $validated['phone_number'],
             'password' => Hash::make($validated['password']),
-            'userable_id' => $userable->id, // Associate with the specific model
-            'userable_type' => get_class($userable) // Store the full class name (e.g., App\Models\Customer)
+            'userable_id' => $userable->id,
+            'userable_type' => get_class($userable)
         ]);
 
 
@@ -94,7 +95,7 @@ class ManagerController extends Controller
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $user
+            'user' => new UserResource($user)
         ], 201);
 
     } catch (\Exception $e) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Rating;
 use App\Http\Requests\StoreRatingRequest;
 use App\Http\Requests\UpdateRatingRequest;
+use App\Http\Resources\Rating\RatingResource;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Customer;
@@ -22,18 +23,7 @@ class RatingController extends Controller
     {
 
     }
-    public function index()
-    {
-        //
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -50,39 +40,11 @@ class RatingController extends Controller
     $rating = $this->ratingService->createRating($id, $request->all());
 
     return response()->json([
-        'success' => 'Rating submitted successfully!',
-        'data' => $rating
+        'message' => 'Rating submitted successfully',
+        'rating' => new RatingResource($rating)
     ], 201);
 }
     /**
      * Display the specified resource.
      */
-    public function show(Rating $rating)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Rating $rating)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateRatingRequest $request, Rating $rating)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Rating $rating)
-    {
-        //
-    }
 }
