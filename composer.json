@@ -9,6 +9,7 @@
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "somarkesen/telegram-gateway": "^1.2",
         "spatie/laravel-medialibrary": "^11.12",
         "spatie/laravel-permission": "^6.15"
     },

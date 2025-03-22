@@ -27,18 +27,49 @@ class AuthController extends Controller
             return $e->getMessage();
         }
     }
+    public function verifyOtp(Request $request)
+{
+    $request->validate([
+        'phone_number' => 'required|exists:users,phone_number',
+        'otp' => 'required|digits:5',
+    ]);
+
+    try {
+
+        $data = $this->authService->verifyOtp($request->phone_number, $request->otp);
+        return response()->json($data);
+    } catch (Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 400);
+    }
+}
+
     public function login(Request $request)
     {
+
         $data = $request->validate([
-            'email' => 'required|email|exists:users,email',
+            'phone_number' => 'required|exists:users,phone_number',
             'password' => ['required']
         ]);
+
+
+
+
         $data = $this->authService->login($data);
-        $data['user'] = UserResource::make($data['user']);
+
 
         return response()->json([$data, 'user created bro']);
 
     }
+    public function verifyLogOtp(Request $request)
+{
+    $data = $request->validate([
+        'phone_number' => 'required|exists:users,phone_number',
+        'otp' => 'required|numeric',
+    ]);
+
+    return $this->authService->verifyLogOtp($data['phone_number'], $data['otp']);
+}
+
     public function logout(Request $request)
     {
         $this->authService->logout();

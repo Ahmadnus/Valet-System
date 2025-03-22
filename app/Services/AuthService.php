@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Resources\UserResource;
 use Exception;
 use App\Models\User;
 use App\Models\Client;
@@ -12,55 +13,133 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use SomarKesen\TelegramGateway\Facades\TelegramGateway;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
+
 
 class AuthService
 {
-    public function register( array $data)
+    public function register(array $data)
     {
         try {
             DB::beginTransaction();
 
-            // Create Customer
+
             $client = Customer::create([
-                // Add necessary customer attributes if needed
+
             ]);
 
-            // Ensure only user-related fields are passed
-            $userData = Arr::only($data, ['name', 'email', 'password','phone_number']);
+
+            $userData = Arr::only($data, ['name', 'password', 'phone_number']);
             $user = $client->user()->create($userData);
 
-            // Assign 'valet_customer' role
+
             $role = Role::firstOrCreate(['name' => 'valet_customer']);
             $user->assignRole($role);
 
-            // Create Access Token
-            $token = $this->createAccessToken($user);
+
+
+
+
+            $otp = mt_rand(10000, 99999);
+            Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
+
+
+            TelegramGateway::sendVerificationMessage($user->phone_number, [
+                'code' => $otp,
+                'ttl' => 300,
+
+
+            ]);
 
             DB::commit();
 
             return [
                 'user' => $user,
-                'token' => $token
+
             ];
         } catch (Exception $e) {
             DB::rollBack();
             throw new Exception($e->getMessage());
         }
     }
+    public function verifyOtp($phoneNumber, $otp)
+    {
+        dd();
+        $cachedOtp = Cache::get("otp_{$phoneNumber}");
+
+        if (!$cachedOtp) {
+            throw new Exception('OTP expired or invalid.');
+        }
+
+        if ($cachedOtp != $otp) {
+            throw new Exception('Invalid OTP.');
+        }
+
+
+        Cache::forget("otp_{$phoneNumber}");
+
+        return [
+            'message' => 'OTP verified successfully!',
+        ];
+    }
+
+
     public function login($data)
     {
-        $user = User::where('email', $data['email'])->first();
+        $user = User::where('phone_number', $data['phone_number'])->first();
 
         if (!Hash::check($data['password'], $user->password)) {
             throw new Exception('invalid phone or password');
         }
-        $token = $this->createAccessToken($user);
-        $data = [
-            'user' => $user->load('userable'),
-            'token' => $token
-        ];
-        return $data;
+        $otp = mt_rand(10000, 99999);
+            Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
+
+
+            TelegramGateway::sendVerificationMessage($user->phone_number, [
+                'code' => $otp,
+                'ttl' => 300,
+
+
+            ]);
+
     }
+    public function verifyLogOtp($phoneNumber, $otp)
+{
+
+    $cachedOtp = Cache::get("otp_{$phoneNumber}");
+
+    if (!$cachedOtp) {
+        throw new Exception('OTP expired or invalid.');
+    }
+
+    if ($cachedOtp != $otp) {
+        throw new Exception('Invalid OTP.');
+    }
+
+    // Find user by phone number
+    $user = User::where('phone_number', $phoneNumber)->first();
+    if (!$user) {
+        throw new Exception('User not found.');
+    }
+
+
+    $user->update(['is_verified' => true]);
+
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+
+    Cache::forget("otp_{$phoneNumber}");
+
+    return ([
+        'message' => 'OTP verified successfully!',
+        'token' => $token,
+        'user' => new UserResource($user),
+    ]);
+}
+
     private function createAccessToken($user)
     {
         $token = $user->createToken("login")->plainTextToken;

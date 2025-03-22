@@ -23,7 +23,7 @@ class SignupRequest extends FormRequest
     {
         return [
             'name'=>'required|string|regex:/^[a-zA-Z\s]+$/',
-            'email'=>'required|email|unique:users,email',
+
             'phone_number' => 'required',
             "password"=> ["required", "string", "min:8", 'confirmed']
         ];

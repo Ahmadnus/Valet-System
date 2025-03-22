@@ -16,7 +16,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 Route::prefix('auth')->group(function () {
 
+
   Route::post('signup', [AuthController::class, "signup"])->name('signup');
+  Route::post('/verify', [AuthController::class, 'verifyOtp'])->name('otp.verify');
+  Route::post('/verifylog', [AuthController::class, 'verifyLogOtp'])->name('otp.verifyy');
   Route::post('signupAdmin', [AuthController::class, "siginUpAd"]);
   Route::post('login', [AuthController::class, "login"]);
   Route::post('loginAdmin', [AuthController::class, "loginAd"]);
