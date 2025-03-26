@@ -22,7 +22,7 @@ class AuthController extends Controller
 
             $data = $this->authService->register($request->validated());
 
-            return $data;
+            return [$data,'enter the code that we send to telegram'];
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -57,7 +57,7 @@ class AuthController extends Controller
         $data = $this->authService->login($data);
 
 
-        return response()->json([$data, 'user created bro']);
+        return response()->json([ 'enter the code that we send to telegram']);
 
     }
     public function verifyLogOtp(Request $request)

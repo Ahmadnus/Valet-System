@@ -13,10 +13,9 @@ class ParkingRequestService
     {
         $userId = Auth::id();
 
-
-        $ownsCar = Car::where('id', $data['car_id'])
-            ->where('user_id', $userId)
-            ->exists();
+        $ownsCar = Car::where('id', $data['car_id'])  // Check if car_id exists in the `Car` table
+        ->where('user_id', $userId)      // Check if the car belongs to the current user
+        ->exists();
 
         if (!$ownsCar) {
             throw new Exception('You can only request parking for a car you own.');
@@ -76,10 +75,14 @@ class ParkingRequestService
         if (!$parkingRequest) {
             throw new Exception('Request not found or not in progress.');
         }
+        $request = Request::find($requestId);
+$timeDifference = $request->calculateTimeDifference();
+
 
         $parkingRequest->update([
             'status' => Request::STATUS_PREPARING,
-
+            'completed_time' => now(),
+            'total_hours' => $timeDifference,
         ]);
 
         return $parkingRequest;
@@ -113,9 +116,10 @@ class ParkingRequestService
 
         $parkingRequest->update([
             'status' => Request::STATUS_COMPLETED,
-            'completed_time' => now(),
+
         ]);
 
         return $parkingRequest;
     }
+
 }

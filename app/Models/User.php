@@ -63,6 +63,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+    public function valetTime()
+    {
+        return $this->hasMany(ValetTime::class);
+    }
 
     public function ratings()
     {

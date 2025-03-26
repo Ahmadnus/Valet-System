@@ -9,6 +9,8 @@ use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ManagerController;
+use App\Http\Controllers\ValetTimeController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Middleware\CheakUser;
 
 Route::get('/user', function (Request $request) {
@@ -69,9 +71,17 @@ Route::middleware(['auth:sanctum', 'platform_manager'])->group(function () {
 });
 
 //
-Route::middleware(['auth:sanctum'])->group(function () {
+
     Route::post('/parking-requests', [RequestController::class, 'createParkingRequest']);
     Route::put('/parking-requests/{id}/accept', [RequestController::class, 'acceptParkingRequest']);
     Route::post('/parking-requests/{id}/prepare', [RequestController::class, 'requestCarPreparation']);
     Route::post('/parking-requests/{id}/complete', [RequestController::class, 'completeParkingRequest']);
+    Route::post('/cal/{req}', [ValetTimeController::class, 'parkingTime']);
+
+
+
+Route::prefix('payments')->controller(PaymentController::class)->group(function () {
+    Route::get('stripe/{userRequest}', 'createStripePayment')->middleware('auth:sanctum');
+    Route::post('fatora', 'createFatora')->middleware('auth:sanctum');
 });
+

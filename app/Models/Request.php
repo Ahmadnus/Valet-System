@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Request extends Model
 {
@@ -28,6 +29,19 @@ public function valetAgent()
 {
     return $this->belongsTo(User::class, 'valet_agent_id');
 }
+public function valete()
+{
+    return $this->hasMany(User::class, 'valit');
+}
+public function valetTime()
+{
+    return $this->hasMany(ValetTime::class);
+}
+public function payment()
+{
+    return $this->hasOne(Payment::class);
+}
+
 
 public const STATUS_PENDING = 'pending';
 public const STATUS_ACCEPTED = 'accepted';
@@ -35,4 +49,21 @@ public const STATUS_IN_PROGRESS = 'in_progress';
 public const STATUS_PREPARING = 'preparing';
 public const STATUS_COMPLETED = 'completed';
 public const STATUS_CANCELED = 'canceled';
+protected $casts = [
+    'completed_time' => 'datetime',
+    'in_progress_time' => 'datetime',
+];
+
+public function calculateTimeDifference()
+{
+    // Ensure both timestamps exist before calculating
+    if (empty($this->completed_time) || empty($this->in_progress_time)) {
+        return 0; // Return 0 if any timestamp is missing
+    }
+  // Convert to Carbon instances if not already
+  $completedTime = Carbon::parse($this->completed_time);
+  $inProgressTime = Carbon::parse($this->in_progress_time);
+
+    return abs($this->completed_time->diffInHours($this->in_progress_time));
+}
 }
