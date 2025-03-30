@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ahmad;
+
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification ;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -61,6 +65,21 @@ Route::get('test', function () {
 
 Route::get('success', function () {
     return 'success';
+});
+Route::view('fcm','firbase');
+Route::get('tst',function(){
+
+//    $messaging = app('firebase.messaging');
+//    $message = CloudMessage::new()
+    //    ->withNotification(Notification::create('Title', 'Body'))
+    //    ->withData(['key' => 'value'])
+    //    ->toToken('...')
+/// ->toTopic('...')
+        // ->toCondition('...')
+    ;
+
+    //$result = $messaging->subscribeToTopic('customer', $registrationTokenOrTokens);
+    //$messaging->send($message);
 });
 
 

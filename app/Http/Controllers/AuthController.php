@@ -48,7 +48,8 @@ class AuthController extends Controller
 
         $data = $request->validate([
             'phone_number' => 'required|exists:users,phone_number',
-            'password' => ['required']
+            'password' => ['required'],
+            'fcm_token'=>[]
         ]);
 
 
@@ -57,7 +58,7 @@ class AuthController extends Controller
         $data = $this->authService->login($data);
 
 
-        return response()->json([ 'enter the code that we send to telegram']);
+        return $data;
 
     }
     public function verifyLogOtp(Request $request)

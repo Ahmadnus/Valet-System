@@ -10,12 +10,14 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
+    {    Schema::disableForeignKeyConstraints();
         Schema::create('valet_times', function (Blueprint $table) {
             $table->id();
             $table->foreignId('request_id')->constrained('requests')->onDelete('cascade');
             $table->foreignId('location_agent_id')->constrained('location_agent')->onDelete('cascade');
             $table->decimal('hours', 5, 2)->notNull();
+            $table->decimal('price',  10, 2)->notNull();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps(); // This includes created_at and updated_at
         });
     }

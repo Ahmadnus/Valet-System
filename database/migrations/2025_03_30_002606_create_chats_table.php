@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('requests', function (Blueprint $table) {
-            $table->decimal('total_hours', 5, 2)->nullable();
+        Schema::create('chats', function (Blueprint $table) {
+            $table->id(); // This is UNSIGNED BIGINT by default
+    $table->foreignId('agent_id')->constrained('users')->onDelete('cascade');
+    $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
+    $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('requests', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('chats');
     }
 };

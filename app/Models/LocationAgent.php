@@ -9,4 +9,6 @@ class LocationAgent extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+
 }

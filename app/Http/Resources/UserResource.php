@@ -19,6 +19,7 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'fcm_token'=>$this->fcm_token,
 
             'type' => class_basename($this->userable_type),
             'created_at' => $this->create_at,

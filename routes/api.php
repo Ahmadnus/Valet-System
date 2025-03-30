@@ -5,13 +5,19 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\CartypeController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\ValetTimeController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Middleware\CheakUser;
+use App\Http\model\Payment;
+use App\Models\Payment as ModelsPayment;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\TruckungController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -47,6 +53,7 @@ Route::post('/rate/{id}', [RatingController::class, 'store'])->middleware('auth:
 
 
 Route::post('/find-nearest', [LocationController::class, 'findNearest']);
+Route::get('/find-parking/{id}', [LocationController::class, 'show']);
 
 
 
@@ -65,9 +72,18 @@ Route::middleware(['auth:sanctum', 'platform_manager'])->group(function () {
     Route::get('/users', [ManagerController::class, 'index']);
     Route::get('/users/{id}', [ManagerController::class, 'show']);
     Route::post('/users', [ManagerController::class, 'store']);
-    Route::post('/users/{user}', [ManagerController::class, 'update']);
+    Route::put('/users/{user}', [ManagerController::class, 'update']);
     Route::delete('/users/{id}', [ManagerController::class, 'destroy']);
 
+});
+
+
+Route::middleware(['auth:sanctum'])->group(function () {
+Route::post('/locations', [LocationController::class, 'addLocation']);
+Route::put('/locations/{id}', [LocationController::class, 'update']);
+Route::delete('/locations/{id}', [LocationController::class, 'destroy']);
+Route::get('/locations/{id}', [LocationController::class, 'show']);
+Route::get('/locations', [LocationController::class, 'index']);
 });
 
 //
@@ -85,3 +101,24 @@ Route::prefix('payments')->controller(PaymentController::class)->group(function 
     Route::post('fatora', 'createFatora')->middleware('auth:sanctum');
 });
 
+
+
+
+
+
+Route::post('/send-notification', [NotificationController::class, 'send']);
+
+
+
+
+
+
+Route::post('/start-chat', [ChatController::class, 'startChat']);
+Route::post('/send-message', [ChatController::class, 'sendMessage']);
+Route::get('/chat-messages/{chat_id}', [ChatController::class, 'getMessages']);
+
+
+
+
+
+Route::post('/messagel', [TruckungController::class, 'sendLocation']);

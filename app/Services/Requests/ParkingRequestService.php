@@ -6,56 +6,71 @@ use App\Models\Request;
 use App\Models\Car;
 use Illuminate\Support\Facades\Auth;
 use Exception;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 class ParkingRequestService
 {
-    public function createParkingRequest(array $data)
-    {
-        $userId = Auth::id();
 
-        $ownsCar = Car::where('id', $data['car_id'])  // Check if car_id exists in the `Car` table
-        ->where('user_id', $userId)      // Check if the car belongs to the current user
+
+
+public function createParkingRequest(array $data)
+{
+    $userId = Auth::id();
+
+    $ownsCar = Car::where('id', $data['car_id'])
+        ->where('user_id', $userId)
         ->exists();
 
-        if (!$ownsCar) {
-            throw new Exception('You can only request parking for a car you own.');
-        }
+    if (!$ownsCar) {
+        Log::warning("User $userId attempted to request parking for a car they don't own.");
+        throw new Exception('You can only request parking for a car you own.');
+    }
 
+    $existingRequest = Request::where('user_id', $userId)
+        ->where('car_id', $data['car_id'])
+        ->whereIn('status', ['pending', 'in_progress'])
+        ->exists();
 
-        $existingRequest = Request::where('user_id', $userId)
-            ->whereIn('status', ['pending', 'in_progress'])
-            ->exists();
+    if ($existingRequest) {
+        Log::info("User $userId attempted to create a duplicate parking request.");
+        throw new Exception('You have already sent a request. Please wait until it is completed.');
+    }
 
-        if ($existingRequest) {
-            throw new Exception('You have already sent a request. Please wait until it is completed.');
-        }
-
-
-        return Request::create([
+    return DB::transaction(function () use ($userId, $data) {
+        $request = Request::create([
             'user_id' => $userId,
             'car_id' => $data['car_id'],
             'location_id' => $data['location_id'],
             'status' => 'pending',
-            'request_time' => now(),
+            'parking_slot_id' => $data['parking_slot_id'],
         ]);
+
+        Log::info("Parking request {$request->id} created by user $userId.");
+
+        return $request;
+    });
+}
+
+public function acceptParkingRequest(int $requestId)
+{
+    $valetAgentId = Auth::id();
+
+    if (!Auth::user()->hasRole('valet_agent')) {
+        Log::warning("User $valetAgentId attempted to accept parking request $requestId without permission.");
+        throw new Exception('Unauthorized. Only valet agents can accept requests.');
     }
 
-    public function acceptParkingRequest(int $requestId)
-    {
-        $valetAgentId = Auth::id();
-
-        if (!Auth::user()->hasRole('valet_agent')) {
-            throw new Exception('Unauthorized. Only valet agents can accept requests.');
-        }
-
+    return DB::transaction(function () use ($requestId, $valetAgentId) {
         $parkingRequest = Request::where('id', $requestId)
-            ->where('status', 'pending')
-            ->first();
+            ->where('status', 'pending')->with('parkingSlot')
+            ->first();  // ✅ Use first() instead of get()
+
+
 
         if (!$parkingRequest) {
+            Log::info("Parking request $requestId not found or already accepted.");
             throw new Exception('Request not found or already accepted.');
         }
-
 
         $parkingRequest->update([
             'status' => Request::STATUS_IN_PROGRESS,
@@ -63,21 +78,33 @@ class ParkingRequestService
             'in_progress_time' => now(),
         ]);
 
-        return $parkingRequest;
-    }
+        // ✅ Ensure that parkingSlot() relationship exists before updating
 
-    public function requestCarPreparation(int $requestId)
-    {
+            $parkingRequest->parkingSlot()->update([
+                'status' => 'occupied',
+            ]);
+
+
+        Log::info("Parking request $requestId accepted by valet agent $valetAgentId.");
+
+        return $parkingRequest;
+    });
+}
+
+
+public function requestCarPreparation(int $requestId)
+{
+    return DB::transaction(function () use ($requestId) {
         $parkingRequest = Request::where('id', $requestId)
             ->where('status', Request::STATUS_IN_PROGRESS)
             ->first();
 
         if (!$parkingRequest) {
+            Log::info("Request $requestId not found or not in progress.");
             throw new Exception('Request not found or not in progress.');
         }
-        $request = Request::find($requestId);
-$timeDifference = $request->calculateTimeDifference();
 
+        $timeDifference = $parkingRequest->calculateTimeDifference();
 
         $parkingRequest->update([
             'status' => Request::STATUS_PREPARING,
@@ -85,14 +112,19 @@ $timeDifference = $request->calculateTimeDifference();
             'total_hours' => $timeDifference,
         ]);
 
-        return $parkingRequest;
-    }
+        Log::info("Request $requestId moved to preparing status.");
 
-    public function completeParkingRequest(int $requestId, string $plateNumber)
-    {
+        return $parkingRequest;
+    });
+}
+
+public function completeParkingRequest(int $requestId, string $plateNumber)
+{
+    return DB::transaction(function () use ($requestId, $plateNumber) {
         $valetAgentId = Auth::id();
 
         if (!Auth::user()->hasRole('valet_agent')) {
+            Log::warning("User $valetAgentId attempted to complete request $requestId without permission.");
             throw new Exception('Unauthorized. Only valet agents can complete requests.');
         }
 
@@ -101,25 +133,26 @@ $timeDifference = $request->calculateTimeDifference();
             ->first();
 
         if (!$parkingRequest) {
+            Log::info("Request $requestId not found or not ready for completion.");
             throw new Exception('Request not found or not ready for completion.');
         }
-
 
         $car = Car::where('id', $parkingRequest->car_id)
             ->where('plate_number', $plateNumber)
             ->first();
 
         if (!$car) {
+            Log::warning("Plate number mismatch for car ID {$parkingRequest->car_id} on request $requestId.");
             throw new Exception('Plate number does not match the registered car.');
         }
 
-
         $parkingRequest->update([
             'status' => Request::STATUS_COMPLETED,
-
         ]);
 
-        return $parkingRequest;
-    }
+        Log::info("Request $requestId completed by valet agent $valetAgentId.");
 
+        return $parkingRequest;
+    });
+}
 }

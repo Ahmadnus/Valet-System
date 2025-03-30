@@ -22,4 +22,8 @@ public function agents()
 {
     return $this->belongsToMany(User::class, 'location_agent', 'location_id', 'agent_id');
 }
+public function parkingSlots()
+{
+    return $this->hasMany(ParkingSlot::class);
+}
 }

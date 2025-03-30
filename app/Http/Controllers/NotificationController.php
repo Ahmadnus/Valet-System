@@ -2,65 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notification;
-use App\Http\Requests\StoreNotificationRequest;
-use App\Http\Requests\UpdateNotificationRequest;
+use Illuminate\Http\Request;
+use App\Services\FirebaseNotificationService;
+use App\services\NotificationService;
 
 class NotificationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $firebaseService;
+
+    public function __construct(NotificationService $firebaseService)
     {
-        //
+        $this->firebaseService = $firebaseService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function send(Request $request)
     {
-        //
-    }
+        $request->validate([
+            'title' => 'required|string',
+            'body' => 'required|string',
+            'token' => 'required|string'
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreNotificationRequest $request)
-    {
-        //
-    }
+        $this->firebaseService->sendNotification(
+            $request->title,
+            $request->body,
+            $request->token,
+            $request->data ?? []
+        );
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateNotificationRequest $request, Notification $notification)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Notification $notification)
-    {
-        //
+        return response()->json(['message' => 'Notification sent!']);
     }
 }

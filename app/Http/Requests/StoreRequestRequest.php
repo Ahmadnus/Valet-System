@@ -24,6 +24,7 @@ class StoreRequestRequest extends FormRequest
     return [
         'car_id' => 'required|exists:cars,id',
         'location_id' => 'required|exists:locations,id',
+        'Parking_slots_id' => '',
 
     ];
 

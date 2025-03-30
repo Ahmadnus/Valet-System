@@ -208,4 +208,5 @@ return response()->json($typeCounts);
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
+
 }

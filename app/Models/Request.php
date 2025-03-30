@@ -41,6 +41,10 @@ public function payment()
 {
     return $this->hasOne(Payment::class);
 }
+public function parkingSlot()
+{
+    return $this->belongsTo(ParkingSlot::class, 'parking_slot_id');
+}
 
 
 public const STATUS_PENDING = 'pending';

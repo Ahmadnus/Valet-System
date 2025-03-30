@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('requests', function (Blueprint $table) {
-            $table->timestamp('in_progress_time')->nullable();
+        Schema::create('parking_slots', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('location_id')->constrained('locations')->onDelete('cascade');
 
 
+            $table->enum('status', ['available', 'occupied', 'reserved'])->default('available');
+            $table->timestamps();
         });
     }
 
@@ -23,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('requests', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('parking_slots');
     }
 };

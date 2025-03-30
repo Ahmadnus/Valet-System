@@ -26,6 +26,7 @@ class ValetTimeController extends Controller
         $data = $this->calculateService->parkingTime($validatedData, $req);
 
         return response()->json([
+            'success'=>'success',
             'message' => 'Parking time calculated successfully!',
             'data' => $data
         ], 200);

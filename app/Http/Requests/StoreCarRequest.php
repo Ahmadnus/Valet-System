@@ -25,7 +25,7 @@ class StoreCarRequest extends FormRequest
         $carTypes = Cartype::pluck('type')->toArray();
         return [
             'plate_number' => 'sometimes|string|unique:cars,plate_number,' ,
-            'key_box' => 'sometimes|string|max:255',
+
             'cartypeable_id' => 'sometimes|integer',
             'cartypeable_type' => ['sometimes', 'string', Rule::in($carTypes)],
         ];

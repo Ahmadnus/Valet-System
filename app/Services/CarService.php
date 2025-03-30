@@ -15,7 +15,7 @@ class CarService
     {
         return Car::create([
             'user_id' => Auth::id(),
-            'key_box' => $data['key_box'],
+
             'cartypeable_id' => $data['cartypeable_id'],
             'cartypeable_type' => \App\Models\CarType::class, // Store full class name
             'plate_number' => $data['plate_number'],

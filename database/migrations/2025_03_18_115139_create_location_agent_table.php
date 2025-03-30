@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('location_id')->constrained('locations')->onDelete('cascade');
             $table->foreignId('agent_id')->constrained('users')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

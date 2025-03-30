@@ -35,16 +35,16 @@ class RolesAndPermissions extends Seeder
     $users = [
         [
             'name' => 'Customer User',
-            'email' => 'customer@example.com',
-            'phone_number' => '1234567890',
+
+            'phone_number' => '123456789401',
             'password' => Hash::make('password'),
             'role' => 'valet_customer',
             'userable' => Customer::create([]),
         ],
         [
             'name' => 'Agent User',
-            'email' => 'agent@example.com',
-            'phone_number' => '2345678901',
+
+            'phone_number' => '+963937875878',
             'password' => Hash::make('password'),
             'role' => 'valet_agent',
             'userable' => Agent::create([]),
@@ -52,23 +52,23 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Host User',
             'email' => 'host@example.com',
-            'phone_number' => '3456789012',
+            'phone_number' => '345678901321',
             'password' => Hash::make('password'),
             'role' => 'valet_host',
             'userable' => Host::create([]),
         ],
         [
             'name' => 'Provider User',
-            'email' => 'provider@example.com',
-            'phone_number' => '4567890123',
+
+            'phone_number' => '4567890123131',
             'password' => Hash::make('password'),
             'role' => 'valet_provider',
             'userable' => Provider::create([]),
         ],
         [
             'name' => 'Manager User',
-            'email' => 'manager@example.com',
-            'phone_number' => '5678901234',
+
+            'phone_number' => '+963939115126',
             'password' => Hash::make('password'),
             'role' => 'platform_manager',
             'userable' => Manager::create([]),
@@ -80,7 +80,7 @@ class RolesAndPermissions extends Seeder
 
         $user = User::create([
             'name' => $userData['name'],
-            'email' => $userData['email'],
+
             'phone_number' => $userData['phone_number'],
             'password' => $userData['password'],
             'userable_id' => $userData['userable']->id,

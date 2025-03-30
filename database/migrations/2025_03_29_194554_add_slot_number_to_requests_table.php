@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('locations', function (Blueprint $table) {
-            $table->foreignId('host_id')->nullable()->constrained('users')->nullOnDelete();
+        Schema::table('parking_slots', function (Blueprint $table) {
+            $table->string('slot_number');
+
         });
     }
 
@@ -21,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('locations', function (Blueprint $table) {
+        Schema::table('parking_slots', function (Blueprint $table) {
             //
         });
     }

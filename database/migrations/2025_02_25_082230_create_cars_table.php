@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('plate_number')->unique();
-            $table->string('key_box')->nullable();
+
             $table->morphs('cartypeable');
             $table->timestamps();
         });

@@ -95,13 +95,18 @@ class AuthService
         }
         $otp = mt_rand(10000, 99999);
             Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
-
+            $token = $user->createToken("login")->plainTextToken;
 
             TelegramGateway::sendVerificationMessage($user->phone_number, [
                 'code' => $otp,
                 'ttl' => 300,
 
 
+            ]);
+            return ([
+                'message' => 'OTP verified successfully!',
+                'token' => $token,
+                'user' => new UserResource($user),
             ]);
 
     }
