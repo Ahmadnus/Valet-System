@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('hours', 5, 2)->notNull();
             $table->decimal('price',  10, 2)->notNull();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->timestamps(); // This includes created_at and updated_at
+            $table->timestamps();
         });
     }
 

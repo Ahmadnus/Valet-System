@@ -17,10 +17,15 @@ class TruckingCar implements  ShouldBroadcast
     /**
      * Create a new event instance.
      */
-    public $location;
-    public function __construct($location)
+    public $agentId;
+    public $latitude;
+    public $longitude;
+    public function __construct($agentId, $latitude, $longitude)
     {
-        $this->location = $location;
+        $this->agentId = $agentId;
+
+        $this->latitude = $latitude;
+        $this->longitude = $longitude;
     }
 
     /**
@@ -31,7 +36,7 @@ class TruckingCar implements  ShouldBroadcast
     public function broadcastOn(): array
 {
     return [
-        new Channel('trucking-channel'),
+        new PrivateChannel("trucking.$this->agentId"),
     ];
 }
 

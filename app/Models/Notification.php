@@ -9,10 +9,16 @@ class Notification extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'message', 'is_read'];
+    protected $fillable = ['title', 'body', 'type', 'data'];
 
-    public function user()
+    protected $casts = [
+        'data' => 'array', // Convert JSON to array
+    ];
+
+    public function users()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(User::class, 'notification_user')
+                    ->withPivot('is_read')
+                    ->withTimestamps();
     }
 }

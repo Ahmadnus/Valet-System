@@ -61,7 +61,9 @@ class User extends Authenticatable
 
     public function notifications()
     {
-        return $this->hasMany(Notification::class);
+        return $this->belongsToMany(Notification::class, 'notification_user')
+                    ->withPivot('is_read')
+                    ->withTimestamps();
     }
     public function valetTime()
     {
@@ -76,4 +78,33 @@ class User extends Authenticatable
     {
         return $this->morphTo('user');
     }
+    public function locations()
+{
+    return $this->hasMany(AgentLocation::class, 'agent_id');
+}
+
+public function fcmTokens()
+{
+    return $this->hasMany(FcmToken::class);
+}
+
+public function hasCar($carId)
+{
+    dd();
+    // Check if the user owns the car
+    return $this->cars()->where('id', $carId)->exists();
+}
+public function loyaltyPoints()
+{
+    return $this->hasOne(LoyaltyPoint::class);
+}
+
+/**
+ * Get the invoices for the user.
+ */
+public function invoices()
+{
+    return $this->hasMany(Invoice::class);
+}
+
 }

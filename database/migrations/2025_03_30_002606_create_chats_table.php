@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chats', function (Blueprint $table) {
-            $table->id(); // This is UNSIGNED BIGINT by default
+            $table->id();
     $table->foreignId('agent_id')->constrained('users')->onDelete('cascade');
     $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
     $table->timestamps();

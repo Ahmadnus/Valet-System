@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\CartypeController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\FeeWaiverController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\LocationController;
@@ -18,6 +19,8 @@ use App\Http\model\Payment;
 use App\Models\Payment as ModelsPayment;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\TruckungController;
+use App\Http\Controllers\LoyaltyPointController;
+use Illuminate\Support\Facades\Broadcast;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -99,7 +102,10 @@ Route::get('/locations', [LocationController::class, 'index']);
 Route::prefix('payments')->controller(PaymentController::class)->group(function () {
     Route::get('stripe/{userRequest}', 'createStripePayment')->middleware('auth:sanctum');
     Route::post('fatora', 'createFatora')->middleware('auth:sanctum');
+
+
 });
+Route::get('payment-success', [PaymentController::class, 'paymentSuccess']);
 
 
 
@@ -111,14 +117,37 @@ Route::post('/send-notification', [NotificationController::class, 'send']);
 
 
 
-
+Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::post('/start-chat', [ChatController::class, 'startChat']);
 Route::post('/send-message', [ChatController::class, 'sendMessage']);
 Route::get('/chat-messages/{chat_id}', [ChatController::class, 'getMessages']);
 
+});
+
+
+
+//Broadcast::routes();
+Route::post('/update-location', [TruckungController::class, 'updateLocation']);
+Route::get('/get-location/{agent_id}', [TruckungController::class, 'getLocation']);
+
+
+
+////
+
+Route::get('/loyalty-points', [LoyaltyPointController::class, 'show']);
+Route::post('/use-loyalty-points', [LoyaltyPointController::class, 'useLoyaltyPoints']);
+Route::post('/earn-loyalty-points', [LoyaltyPointController::class, 'earnLoyaltyPoints']);
+Route::post('/generate-invoice', [LoyaltyPointController::class, 'generateInvoice']);
+Route::middleware('auth:sanctum')->get('/cheak-points', [LoyaltyPointController::class, 'checkLoyaltyPoints']);
+
+
+/////
+Route::post('/fee-waiver/request', [FeeWaiverController::class, 'requestFeeWaiver']);
+Route::post('/fee-waiver/{id}', [FeeWaiverController::class, 'handleFeeWaiver']);
 
 
 
 
-Route::post('/messagel', [TruckungController::class, 'sendLocation']);
+///
+Route::get('/payment-history', [PaymentController::class, 'showPaymentHistory'])->middleware('auth:sanctum');

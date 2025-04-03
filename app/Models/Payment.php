@@ -11,5 +11,10 @@ class Payment extends Model
     protected $guarded = [];
 
 
+// In the Payment model
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
 
 }

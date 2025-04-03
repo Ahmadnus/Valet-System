@@ -13,11 +13,11 @@ return new class extends Migration
     {  Schema::disableForeignKeyConstraints();
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Location name (e.g., Parking A, Mall Entrance)
+            $table->string('name');
 
-            $table->decimal('latitude', 10, 7);  // Latitude
-            $table->decimal('longitude', 10, 7); // Longitude
-            $table->decimal('cost', 10, 2); // Longitude
+            $table->decimal('latitude', 10, 7);
+            $table->decimal('longitude', 10, 7);
+            $table->decimal('cost', 10, 2);
             $table->foreignId('host_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

@@ -63,7 +63,7 @@ public function acceptParkingRequest(int $requestId)
     return DB::transaction(function () use ($requestId, $valetAgentId) {
         $parkingRequest = Request::where('id', $requestId)
             ->where('status', 'pending')->with('parkingSlot')
-            ->first();  // ✅ Use first() instead of get()
+            ->first();
 
 
 
@@ -78,7 +78,7 @@ public function acceptParkingRequest(int $requestId)
             'in_progress_time' => now(),
         ]);
 
-        // ✅ Ensure that parkingSlot() relationship exists before updating
+
 
             $parkingRequest->parkingSlot()->update([
                 'status' => 'occupied',

@@ -17,6 +17,8 @@ use SomarKesen\TelegramGateway\Facades\TelegramGateway;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
+use App\Notifications\Notification;
+use Kreait\Firebase\Messaging\Notification as MessagingNotification;
 
 class AuthService
 {
@@ -52,7 +54,9 @@ class AuthService
 
 
             ]);
-
+            if(isset($data['fcm_token'])){
+                $this->storFcm($user,$data['fcm_token']);
+            }
             DB::commit();
 
             return [
@@ -103,6 +107,9 @@ class AuthService
 
 
             ]);
+            if(isset($data['fcm_token'])){
+                $this->storFcm($user,$data['fcm_token']);
+            }
             return ([
                 'message' => 'OTP verified successfully!',
                 'token' => $token,
@@ -149,6 +156,12 @@ class AuthService
     {
         $token = $user->createToken("login")->plainTextToken;
         return $token;
+    }
+    private function storFcm($user,$token){
+        $user->fcmTokens()->create([
+            'token'=>$token
+        ]);
+
     }
     public function logout() {
         $user = Auth:: user();

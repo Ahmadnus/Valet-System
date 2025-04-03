@@ -23,7 +23,7 @@ class SignupRequest extends FormRequest
     {
         return [
             'name'=>'required|string|regex:/^[a-zA-Z\s]+$/',
-
+'fcm_token'=>[],
             'phone_number' => 'required',
             "password"=> ["required", "string", "min:8", 'confirmed']
         ];

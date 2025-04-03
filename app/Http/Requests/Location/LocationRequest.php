@@ -21,15 +21,18 @@ class LocationRequest extends FormRequest
      */
     public function rules(): array
     {
+
         return [
+
             'name' => 'required|string|max:255',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'host_id' => '',
             'cost' => 'required|numeric|min:0',
             'agent_ids' => 'nullable|array',
-    'agent_ids.*' => '',
-    'number_of_slots' => [''],
+            'agent_id' => 'required|integer',
+            'agent_ids.*' => '',
+             'number_of_slots' => [''],
         ];
     }
     public function messages(): array
