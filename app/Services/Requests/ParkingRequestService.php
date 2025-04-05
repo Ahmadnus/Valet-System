@@ -2,18 +2,31 @@
 
 namespace App\Services\Requests;
 
+
 use App\Models\Request;
 use App\Models\Car;
+use App\Models\User;
+
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\NotificationService;
+use App\NotificationType;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
+
 class ParkingRequestService
 {
 
+    protected NotificationService $notificationService;
 
-
-public function createParkingRequest(array $data)
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+    public function createParkingRequest(array $data)
 {
     $userId = Auth::id();
 
@@ -36,19 +49,32 @@ public function createParkingRequest(array $data)
         throw new Exception('You have already sent a request. Please wait until it is completed.');
     }
 
-    return DB::transaction(function () use ($userId, $data) {
-        $request = Request::create([
-            'user_id' => $userId,
-            'car_id' => $data['car_id'],
-            'location_id' => $data['location_id'],
+    $request = Request::create([
+        'user_id' => $userId,
+        'car_id' => $data['car_id'],
+        'location_id' => $data['location_id'],
+        'status' => 'pending',
+        'parking_slot_id' => $data['parking_slot_id'],
+    ]);
+
+    Log::info("Parking request {$request->id} created by user $userId.");
+
+    // Send notification to valet agent using topic
+    app(NotificationService::class)->sendNotification(
+        title: 'طلب ركن جديد',
+        body: 'تم إنشاء طلب ركن سيارة جديد من قبل أحد العملاء.',
+        data: [
+            'request_id' => $request->id,
             'status' => 'pending',
-            'parking_slot_id' => $data['parking_slot_id'],
-        ]);
+        ],
+        user: null,
+        topic: \App\TopicType::VALET_AGENT,
+        type: NotificationType::REQUEST_PARKING_SERVICE
+    );
 
-        Log::info("Parking request {$request->id} created by user $userId.");
 
-        return $request;
-    });
+
+    return $request;
 }
 
 public function acceptParkingRequest(int $requestId)

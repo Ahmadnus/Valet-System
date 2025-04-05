@@ -27,47 +27,50 @@ class AuthService
         try {
             DB::beginTransaction();
 
-
             $client = Customer::create([
 
             ]);
 
-
             $userData = Arr::only($data, ['name', 'password', 'phone_number']);
             $user = $client->user()->create($userData);
-
 
             $role = Role::firstOrCreate(['name' => 'valet_customer']);
             $user->assignRole($role);
 
-
-
-
-
+            // OTP
             $otp = mt_rand(10000, 99999);
             Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
-
-
             TelegramGateway::sendVerificationMessage($user->phone_number, [
                 'code' => $otp,
                 'ttl' => 300,
-
-
             ]);
-            if(isset($data['fcm_token'])){
-                $this->storFcm($user,$data['fcm_token']);
+
+
+            if (!empty($data['fcm_token'])) {
+                $this->storeFcmToken($user, $data['fcm_token']);
             }
+
             DB::commit();
 
             return [
                 'user' => $user,
-
             ];
         } catch (Exception $e) {
             DB::rollBack();
             throw new Exception($e->getMessage());
         }
     }
+
+    private function storeFcmToken(User $user, string $token): void
+    {
+        // تحقق من التكرار عشان ما تسجل نفس التوكن مرتين
+        if (!$user->fcmTokens()->where('token', $token)->exists()) {
+            $user->fcmTokens()->create([
+                'token' => $token,
+            ]);
+        }
+    }
+
     public function verifyOtp($phoneNumber, $otp)
     {
         dd();
@@ -137,7 +140,6 @@ class AuthService
     }
 
 
-    $user->update(['is_verified' => true]);
 
 
     $token = $user->createToken('auth_token')->plainTextToken;

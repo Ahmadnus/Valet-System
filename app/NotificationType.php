@@ -1,58 +1,32 @@
 <?php
 
 namespace App;
+
+
 enum NotificationType: string
 {
-    case CHAT_MESSAGE = 'chat_message';
-    case ORDER_UPDATE = 'order_update';
-    case SYSTEM_ALERT = 'system_alert';
-    case PROMOTION = 'promotion';
+    case REQUEST_PARKING_SERVICE = 'Noif-1';
+    case REQUEST_CAR = 'Noif-2';
+    case NEW_VP_RATE = 'Noif-3';
+    case NEW_PAYMENT = 'Noif-4';
+    case ASK_FOR_WAIVE = 'Noif-5';
+    case ANSWER_WAIVE = 'Noif-6';
+    case CLOSE_PARKING_EVENT = 'Noif-7';
+    case NEW_VC_RATE = 'Noif-8';
 
-    public function label(): string
+    public function defaultTitle(): string
     {
-        return match ($this) {
-            self::CHAT_MESSAGE => 'Chat Message',
-            self::ORDER_UPDATE => 'Order Update',
-            self::SYSTEM_ALERT => 'System Alert',
-            self::PROMOTION => 'Promotion Notification',
+        return match($this) {
+            self::REQUEST_PARKING_SERVICE => 'New Parking Request',
+            self::REQUEST_CAR => 'Car Retrieval Request',
+            self::NEW_VP_RATE => 'New Customer Rating',
+            self::NEW_PAYMENT => 'New Payment Made',
+            self::ASK_FOR_WAIVE => 'Fee Waive Request',
+            self::ANSWER_WAIVE => 'Waive Request Response',
+            self::CLOSE_PARKING_EVENT => 'Parking Event Closed',
+            self::NEW_VC_RATE => 'New Agent Rating',
         };
     }
 
-    public function successMessage(): string
-    {
-        return match ($this) {
-            self::CHAT_MESSAGE => 'Message sent successfully.',
-            self::ORDER_UPDATE => 'Order updated and notification sent.',
-            self::SYSTEM_ALERT => 'System alert delivered.',
-            self::PROMOTION => 'Promotion sent!',
-        };
-    }
 
-    public function failureMessage(): string
-    {
-        return match ($this) {
-            self::CHAT_MESSAGE => 'Failed to send message.',
-            self::ORDER_UPDATE => 'Order update failed to notify.',
-            self::SYSTEM_ALERT => 'Could not deliver system alert.',
-            self::PROMOTION => 'Promotion delivery failed.',
-        };
 }
-public function defaultTitle(): string
-    {
-        return match ($this) {
-            self::CHAT_MESSAGE => 'New Message',
-            self::ORDER_UPDATE => 'New Parking Request',
-            self::SYSTEM_ALERT => 'Alert from System',
-            self::PROMOTION => 'Special Promotion',
-        };
-    }
-
-    public function defaultBody(array $data = []): string
-    {
-        return match ($this) {
-            self::CHAT_MESSAGE => "You have a new message from {$data['sender_name'] ?? 'someone'}.",
-            self::ORDER_UPDATE => "User {$data['user_name'] ?? 'a user'} has requested parking.",
-            self::SYSTEM_ALERT => $data['message'] ?? 'A system alert has been issued.',
-            self::PROMOTION => "Don't miss out on {$data['offer'] ?? 'a great deal'}!",
-        };
-}}

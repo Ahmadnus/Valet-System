@@ -46,14 +46,14 @@ class LoyaltyPointService
                 throw new Exception("Not enough points.");
             }
 
-    
+
             $loyalty->points -= $points;
             $loyalty->save();
 
-        
+
             $remainingBalance = max(0, $price - ($points / 10)); // Assuming 1 point = $0.1
 
-    
+
             $invoice = Invoice::create([
                 'user_id' => $user->id,
                 'total_amount' => $price,
@@ -61,15 +61,15 @@ class LoyaltyPointService
                 'remaining_balance' => $remainingBalance,
             ]);
 
-    
+
             $valetTime->update(['price' => $remainingBalance]);
 
-            DB::commit(); 
+            DB::commit();
 
             return $invoice;
 
         } catch (Exception $e) {
-            DB::rollBack(); 
+            DB::rollBack();
             Log::error("Loyalty Points Error: " . $e->getMessage());
             throw new Exception($e->getMessage());
         }
