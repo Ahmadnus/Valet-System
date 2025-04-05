@@ -151,3 +151,7 @@ Route::post('/fee-waiver/{id}', [FeeWaiverController::class, 'handleFeeWaiver'])
 
 ///
 Route::get('/payment-history', [PaymentController::class, 'showPaymentHistory'])->middleware('auth:sanctum');
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/rate-agent/{id}', [RatingController::class, 'rateAgent']);
+    Route::post('/rate-customer/{id}', [RatingController::class, 'rateCustomer']);
+});

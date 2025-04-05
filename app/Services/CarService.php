@@ -17,7 +17,7 @@ class CarService
             'user_id' => Auth::id(),
 
             'cartypeable_id' => $data['cartypeable_id'],
-            'cartypeable_type' => \App\Models\CarType::class, // Store full class name
+            'cartypeable_type' => \App\Models\CarType::class,
             'plate_number' => $data['plate_number'],
         ]);
     }

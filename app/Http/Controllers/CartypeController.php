@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\CarType;
 use Illuminate\Http\Request;
 use App\Http\Requests\CartypeRequest;
-
+use App\app\Traits\ApiResponse;
 class CartypeController extends Controller
 {
+    use ApiResponse;
+
     public function index()
     {
         $cartypes = Cartype::all()->map(function ($cartype) {
@@ -18,7 +20,7 @@ class CartypeController extends Controller
             ];
         });
 
-        return response()->json($cartypes, 200);
+        return $this->successResponse('Car types retrieved successfully', $cartypes);
     }
 
     public function store(CartypeRequest $request)
@@ -29,23 +31,24 @@ class CartypeController extends Controller
             $cartype->addMedia($request->file('logo'))->toMediaCollection('logos');
         }
 
-        return response()->json([
-            'message' => 'Car type created successfully!',
-            'data' => [
-                'id' => $cartype->id,
-                'type' => $cartype->type,
-                'logo' => $cartype->getFirstMediaUrl('logos'),
-            ]
-        ], 201);
+        $data = [
+            'id' => $cartype->id,
+            'type' => $cartype->type,
+            'logo' => $cartype->getFirstMediaUrl('logos'),
+        ];
+
+        return $this->successResponse('Car type created successfully!', $data, 201);
     }
 
     public function show(Cartype $cartype)
     {
-        return response()->json([
+        $data = [
             'id' => $cartype->id,
             'type' => $cartype->type,
             'logo' => $cartype->getFirstMediaUrl('logos'),
-        ], 200);
+        ];
+
+        return $this->successResponse('Car type retrieved successfully', $data);
     }
 
     public function update(CartypeRequest $request, Cartype $cartype)
@@ -53,25 +56,24 @@ class CartypeController extends Controller
         $cartype->update(['type' => $request->type]);
 
         if ($request->hasFile('logo')) {
-            $cartype->clearMediaCollection('logos'); // Remove old image
+            $cartype->clearMediaCollection('logos');
             $cartype->addMedia($request->file('logo'))->toMediaCollection('logos');
         }
 
-        return response()->json([
-            'message' => 'Car type updated successfully!',
-            'data' => [
-                'id' => $cartype->id,
-                'type' => $cartype->type,
-                'logo' => $cartype->getFirstMediaUrl('logos'),
-            ]
-        ], 200);
+        $data = [
+            'id' => $cartype->id,
+            'type' => $cartype->type,
+            'logo' => $cartype->getFirstMediaUrl('logos'),
+        ];
+
+        return $this->successResponse('Car type updated successfully!', $data);
     }
 
     public function destroy(Cartype $cartype)
     {
-        $cartype->clearMediaCollection('logos'); // Delete image
+        $cartype->clearMediaCollection('logos');
         $cartype->delete();
 
-        return response()->json(['message' => 'Car type deleted successfully!'], 200);
+        return $this->successResponse('Car type deleted successfully!');
     }
 }

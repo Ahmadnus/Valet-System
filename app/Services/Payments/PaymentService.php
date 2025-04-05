@@ -3,8 +3,11 @@
 namespace App\Services\Payments;
 use App\Models\Request as UserRequest;
 use App\Models\Payment;
-
-
+use App\Models\PaymentHistory;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Exception;
 class PaymentService
 {
     /**
@@ -30,4 +33,5 @@ class PaymentService
 
         return $this->payment->pay($userRequest);
     }
+
 }

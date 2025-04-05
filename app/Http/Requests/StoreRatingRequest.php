@@ -23,12 +23,9 @@ class StoreRatingRequest extends FormRequest
     {
 
         return [
-            'rater_id' => 'required|exists:users,id',
-            'ratee_id' => 'required|exists:users,id',
-            'rater_role' => 'required|string|in:valet_customer,valet_agent',
-            'ratee_role' => 'required|string|in:valet_customer,valet_agent',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:255',
+            'customer_id' => '',
+            'rating' => '',
+            'comment' => '',
         ];
 
     }

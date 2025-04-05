@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\app\Traits\ApiResponse;
 use App\Models\ValetTime;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
@@ -11,24 +12,19 @@ use Carbon\Carbon;
 use App\Services\Requests\CalculateService;
 use App\Http\Requests\Requests\ValetTimeRequest;
 class ValetTimeController extends Controller
-{
+{    use ApiResponse;
 
     public function __construct(private CalculateService $calculateService)
     {
 
     }
     public function parkingTime(ValetTimeRequest $request, $req)
-    {
-        // Validate the request data
-        $validatedData = $request->validated();
+{
+    $validatedData = $request->validated();
 
-        // Call the service method and pass the request ID
-        $data = $this->calculateService->parkingTime($validatedData, $req);
+    $data = $this->calculateService->parkingTime($validatedData, $req);
 
-        return response()->json([
-            'success'=>'success',
-            'message' => 'Parking time calculated successfully!',
-            'data' => $data
-        ], 200);
-    }
+    return $this->successResponse('Parking time calculated successfully!', $data);
+}
+
 }

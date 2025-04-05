@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('payment_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Link to User
-            $table->decimal('amount', 10, 2); // Payment amount
-            $table->enum('payment_method', ['credit_card', 'stripe', 'cash', 'points']); // Payment method (You can add more payment methods as needed)
-            $table->enum('status', ['completed', 'failed']); // Payment status
-            $table->timestamps(); // Created and updated timestamps
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->decimal('amount', 10, 2);
+            $table->enum('payment_method', ['credit_card', 'stripe', 'cash', 'points']);
+            $table->enum('status', ['completed', 'failed']);
+
+            $table->timestamps();
         });
     }
 

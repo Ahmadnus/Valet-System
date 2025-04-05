@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\app\Traits\ApiResponse;
 use App\Models\Rating;
 use App\Http\Requests\StoreRatingRequest;
 use App\Http\Requests\UpdateRatingRequest;
@@ -14,37 +15,34 @@ use App\Services\RatingService;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
+
 class RatingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function __construct(private RatingService $ratingService)
-    {
+    use ApiResponse;
 
+    public function __construct(protected RatingService $ratingService) {}
+
+    public function rateAgent(StoreRatingRequest $request, $agentId)
+    {
+        try {
+            $rating = $this->ratingService->rateAgent($request->validated(), $agentId);
+            return $this->successResponse('Rating submitted successfully', new RatingResource($rating), 201);
+        } catch (\Exception $e) {
+            Log::error("Rate Agent Error: " . $e->getMessage());
+            return $this->errorResponse($e->getMessage());
+        }
     }
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request, $id)
-{
-    // Validate request data
-    $request->validate([
-        'rating' => 'required|integer|min:1|max:5',
-        'comment' => 'nullable|string|max:255',
-    ]);
-
-    // Call the service function
-    $rating = $this->ratingService->createRating($id, $request->all());
-
-    return response()->json([
-        'message' => 'Rating submitted successfully',
-        'rating' => new RatingResource($rating)
-    ], 201);
-}
-    /**
-     * Display the specified resource.
-     */
+    public function rateCustomer(StoreRatingRequest $request, $customerId)
+    {
+        try {
+            $rating = $this->ratingService->rateCustomer($request->validated(), $customerId);
+            return $this->successResponse('Rating submitted successfully', new RatingResource($rating), 201);
+        } catch (\Exception $e) {
+            Log::error("Rate Customer Error: " . $e->getMessage());
+            return $this->errorResponse($e->getMessage());
+        }
+    }
 }

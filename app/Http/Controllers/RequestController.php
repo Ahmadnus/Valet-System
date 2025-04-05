@@ -12,36 +12,19 @@ use Exception;
 class RequestController extends Controller
 {
     use ApiResponse;
+
     protected $parkingRequestService;
 
     public function __construct(ParkingRequestService $parkingRequestService)
     {
         $this->parkingRequestService = $parkingRequestService;
     }
-//this response for delete
-    private function successResponse($data, $message, $status = 200)
-    {
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'data' => $data
-        ], $status);
-    }
-
-    private function errorResponse($message, $status = 400)
-    {
-        return response()->json([
-            'success' => false,
-            'message' => $message,
-            'data' => null
-        ], $status);
-    }
 
     public function createParkingRequest(StoreRequestRequest $request)
     {
         try {
             $parkingRequest = $this->parkingRequestService->createParkingRequest($request->all());
-            return $this->successResponse(new RequestResource($parkingRequest), 'Parking request created successfully', 201);
+            return $this->successResponse('Parking request created successfully', new RequestResource($parkingRequest), 201);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
@@ -51,7 +34,7 @@ class RequestController extends Controller
     {
         try {
             $parkingRequest = $this->parkingRequestService->acceptParkingRequest($requestId);
-            return $this->successResponse(new RequestResource($parkingRequest), 'Parking request accepted successfully');
+            return $this->successResponse('Parking request accepted successfully', new RequestResource($parkingRequest));
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
@@ -61,7 +44,7 @@ class RequestController extends Controller
     {
         try {
             $parkingRequest = $this->parkingRequestService->requestCarPreparation($requestId);
-            return $this->successResponse(new RequestResource($parkingRequest), 'Car preparation requested successfully');
+            return $this->successResponse('Car preparation requested successfully', new RequestResource($parkingRequest));
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
@@ -71,10 +54,9 @@ class RequestController extends Controller
     {
         try {
             $parkingRequest = $this->parkingRequestService->completeParkingRequest($requestId, $request->plate_number);
-            return $this->successResponse(new RequestResource($parkingRequest), 'Parking request completed successfully');
+            return $this->successResponse('Parking request completed successfully', new RequestResource($parkingRequest));
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
     }
-
 }

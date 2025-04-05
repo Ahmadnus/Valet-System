@@ -2,211 +2,74 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Manager;
+use App\Services\ManagerService;
 use App\Http\Requests\StoreManagerRequest;
 use App\Http\Requests\UpdateManagerRequest;
 use App\Http\Requests\Manager\RoleCountRequest;
-use App\Http\Resources\UserResource;
-use App\Models\Agent;
-use App\Models\Customer;
-use App\Models\Host;
-use App\Models\Provider;
-use Spatie\Permission\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Exception;
+use App\app\Traits\ApiResponse;
 
 class ManagerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    use ApiResponse;
+
+    protected $managerService;
+
+    public function __construct(ManagerService $managerService)
+    {
+        $this->managerService = $managerService;
+    }
+
     public function index()
     {
-        $users = User::with('roles')->get();
-        return UserResource::collection($users);
+        $users = $this->managerService->getAllUsers();
+        return $this->successResponse('Users retrieved successfully', $users);
     }
+
     public function show($id)
     {
-        $user = User::with('roles')->find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-        return response()->json($user);
-    }
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $user = $this->managerService->getUserById($id);
+        return $this->successResponse('User retrieved successfully', $user);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|unique:users,email',
-        'password' => 'required|string|min:6',
-        'phone_number' => 'required|string|max:20',
-        'role' => 'required|string|exists:roles,name'
-    ]);
-
-    DB::beginTransaction();
-    try {
-
-        $userable = null;
-        switch ($validated['role']) {
-            case 'valet_customer':
-                $userable = Customer::create([]); // Create a Customer
-                break;
-            case 'valet_agent':
-                $userable = Agent::create([]); // Create an Agent
-                break;
-            case 'valet_host':
-                $userable = Host::create([]); // Create a Host
-                break;
-            case 'valet_provider':
-                $userable = Provider::create([]); // Create a Host
-                break;
-            default:
-                return response()->json(['message' => 'Invalid role'], 400);
-        }
-
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone_number' => $validated['phone_number'],
-            'password' => Hash::make($validated['password']),
-            'userable_id' => $userable->id,
-            'userable_type' => get_class($userable)
-        ]);
-
-
-        $user->assignRole(Role::where('name', $validated['role'])->where('guard_name', 'api')->first());
-
-        DB::commit();
-
-        return response()->json([
-            'message' => 'User created successfully',
-            'user' => new UserResource($user)
-        ], 201);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-}
-
-    /**
-     * Display the specified resource.
-     */
-    public function getUserCountsByRole(RoleCountRequest $request)
-{
-    $users = User::selectRaw('userable_type, COUNT(*) as count')
-    ->groupBy('userable_type')
-    ->get();
-
-
-$typeCounts = $users->mapWithKeys(function ($user) {
-    return [class_basename($user->userable_type) => $user->count];
-});
-
-return response()->json($typeCounts);
-}
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Manager $manager)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-{
-    $validated = $request->validate([
-        'name' => 'sometimes|string|max:255',
-        'email' => 'sometimes|string|email|unique:users,email,' . $user->id,
-        'password' => 'sometimes|string|min:6',
-        'phone_number' => 'sometimes|string|max:20',
-        'role' => 'sometimes|string|exists:roles,name'
-    ]);
-
-    DB::beginTransaction();
-    try {
-
-        if (isset($validated['role']) && !$user->hasRole($validated['role'])) {
-
-            switch ($validated['role']) {
-                case 'valet_customer':
-                    $userable = Customer::create([]);
-                    break;
-                case 'valet_agent':
-                    $userable = Agent::create([]);
-                    break;
-                case 'valet_host':
-                    $userable = Host::create([]);
-                    break;
-                case 'valet_provider':
-                    $userable = Provider::create([]);
-                    break;
-                default:
-                    return response()->json(['message' => 'Invalid role'], 400);
-            }
-
-            $user->userable_id = $userable->id;
-            $user->userable_type = get_class($userable);
-        }
-
-
-        $user->update([
-            'name' => $validated['name'] ?? $user->name,
-            'email' => $validated['email'] ?? $user->email,
-            'phone_number' => $validated['phone_number'] ?? $user->phone_number,
-            'password' => isset($validated['password']) ? Hash::make($validated['password']) : $user->password,
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'phone_number' => 'required|string|max:20',
+            'role' => 'required|string|exists:roles,name'
         ]);
 
-
-        if (isset($validated['role'])) {
-            $user->assignRole(Role::where('name', $validated['role'])->where('guard_name', 'api')->first());
-        }
-
-        DB::commit();
-
-        return response()->json([
-            'message' => 'User updated successfully',
-            'user' => $user
-        ], 200);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['error' => $e->getMessage()], 500);
+        $user = $this->managerService->createUser($validated);
+        return $this->successResponse('User created successfully', $user, 201);
     }
-}
 
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|unique:users,email,' . $user->id,
+            'password' => 'sometimes|string|min:6',
+            'phone_number' => 'sometimes|string|max:20',
+            'role' => 'sometimes|string|exists:roles,name'
+        ]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
+        $updatedUser = $this->managerService->updateUser($user, $validated);
+        return $this->successResponse('User updated successfully', $updatedUser);
+    }
+
     public function destroy($id)
     {
-        $user = User::find($id);
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        $user->delete();
-        return response()->json(['message' => 'User deleted successfully']);
+        $result = $this->managerService->deleteUser($id);
+        return $this->successResponse('User deleted successfully', $result);
     }
 
+    public function getUserCountsByRole(RoleCountRequest $request)
+    {
+        $counts = $this->managerService->getUserCountsByRole();
+        return $this->successResponse('User role counts retrieved successfully', $counts);
+    }
 }

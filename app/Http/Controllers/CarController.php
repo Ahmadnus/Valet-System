@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\app\Traits\ApiResponse;
 use App\Models\Car;
 use App\Services\CarService;
 use App\Http\Requests\StoreCarRequest;
-
 use App\Http\Requests\UpdateCarRequest;
 use App\Http\Resources\Car\CarResource;
 use Illuminate\Support\Facades\Auth;
 use Exception;
+
 class CarController extends Controller
-{   protected $carService;
+{
+    use ApiResponse;
+
+    protected $carService;
 
     public function __construct(CarService $carService)
     {
@@ -24,7 +28,7 @@ class CarController extends Controller
     public function index()
     {
         $cars = Auth::user()->cars;
-        return CarResource::collection($cars);
+        return $this->successResponse('Cars retrieved successfully', CarResource::collection($cars));
     }
 
     /**
@@ -34,12 +38,9 @@ class CarController extends Controller
     {
         try {
             $car = $this->carService->store($request->validated());
-            return response()->json([
-                'message' => 'Car added successfully',
-                'car' => new CarResource($car),
-            ], 201);
+            return $this->successResponse('Car added successfully', new CarResource($car), 201);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
@@ -49,9 +50,9 @@ class CarController extends Controller
     public function show(Car $car)
     {
         if ($car->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return $this->errorResponse('Unauthorized', 403);
         }
-        return new CarResource($car);
+        return $this->successResponse('Car retrieved successfully', new CarResource($car));
     }
 
     /**
@@ -61,12 +62,9 @@ class CarController extends Controller
     {
         try {
             $this->carService->update($request, $car);
-            return response()->json([
-                'message' => 'Car updated successfully',
-                'car' => new CarResource($car),
-            ], 200);
+            return $this->successResponse('Car updated successfully', new CarResource($car));
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
@@ -77,9 +75,9 @@ class CarController extends Controller
     {
         try {
             $this->carService->delete($car);
-            return response()->json(['message' => 'Car deleted successfully'], 200);
+            return $this->successResponse('Car deleted successfully');
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 403);
+            return $this->errorResponse($e->getMessage(), 403);
         }
     }
 }

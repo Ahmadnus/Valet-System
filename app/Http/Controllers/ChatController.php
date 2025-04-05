@@ -15,10 +15,10 @@ use App\Http\Resources\ChatResource;
 use App\Http\Resources\Chat\MessageResource;
 use App\Services\ChatService;
 
-
 class ChatController extends Controller
 {
     use ApiResponse;
+
     protected $chatService;
 
     public function __construct(ChatService $chatService)
@@ -30,29 +30,21 @@ class ChatController extends Controller
     {
         $chat = $this->chatService->startChat($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'chat' => new ChatResource($chat),
-        ]);
+        return $this->successResponse('Chat started successfully', new ChatResource($chat));
     }
 
     public function sendMessage(SendMessageRequest $request)
     {
         $message = $this->chatService->sendMessage($request->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => new MessageResource($message),
-        ]);
+        return $this->successResponse('Message sent successfully', new MessageResource($message));
     }
 
     public function getMessages($chat_id)
     {
         $messages = $this->chatService->getMessages($chat_id);
 
-        return response()->json([
-            'success' => true,
-            'messages' => MessageResource::collection($messages),
-        ]);
+        return $this->successResponse('Messages retrieved successfully', MessageResource::collection($messages));
     }
+
 }

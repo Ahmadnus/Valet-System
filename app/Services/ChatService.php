@@ -62,7 +62,7 @@ class ChatService
             abort(404, 'Chat not found.');
         }
 
-        // Get the authenticated user ID
+
         $userId = Auth::id();
 
         if (!$userId) {
@@ -76,10 +76,10 @@ class ChatService
             abort(403, 'Unauthorized to send messages in this chat.');
         }
 
-        // Create the message
+
         $message = Message::create([
             'chat_id' => $data['chat_id'],
-            'user_id' => $userId,  // Automatically set from authenticated user
+            'user_id' => $userId,
             'content' => $data['content'],
         ]);
 
@@ -100,7 +100,7 @@ class ChatService
             abort(404, 'Chat not found.');
         }
 
-        // Ensure the authenticated user is part of the chat
+
         $userId = Auth::id();
         if (!in_array($userId, [$chat->agent_id, $chat->customer_id])) {
             Log::warning("Unauthorized chat access attempt by User ID {$userId} in Chat ID {$chat_id}");
