@@ -40,11 +40,12 @@ class LoyaltyPointController extends Controller
     /**
      * Use loyalty points
      */
-    public function useLoyaltyPoints(LoyaltyPointsRequest $request)
+    public function useLoyaltyPoints(LoyaltyPointsRequest $request,$request_id)
     {
         try {
             $points = $request->validated()['points'];
-            $invoice = $this->loyaltyPointService->useLoyaltyPoints($points);
+
+            $invoice = $this->loyaltyPointService->useLoyaltyPoints($points,$request_id);
 
             return $this->successResponse('Points applied successfully', [
                 'invoice' => new InvoiceResource($invoice),

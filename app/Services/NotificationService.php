@@ -55,11 +55,12 @@ class NotificationService
                 }
             } elseif ($topic) {
                 // Send to topic
-                $message = $message->withChangedTarget('topic', $topic->value);
+                $message = $message->toTopic('topic', $topic->value);
                 $this->messaging->send($message);
+
             }
             $response = $this->messaging->send($message);
-            Log::info('FCM Response:', (array) $response);
+
             Log::info('Notification sent successfully.');
         } catch (\Throwable $th) {
             Log::error('Notification send failed: ' . $th->getMessage());

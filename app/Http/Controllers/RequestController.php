@@ -7,11 +7,14 @@ use App\Http\Requests\StoreRequestRequest;
 use App\Http\Resources\Request\RequestResource;
 use App\Services\Requests\ParkingRequestService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Exception;
 
 class RequestController extends Controller
 {
     use ApiResponse;
+    use AuthorizesRequests;
 
     protected $parkingRequestService;
 
@@ -22,6 +25,8 @@ class RequestController extends Controller
 
     public function createParkingRequest(StoreRequestRequest $request)
     {
+
+
         try {
             $parkingRequest = $this->parkingRequestService->createParkingRequest($request->all());
             return $this->successResponse('Parking request created successfully', new RequestResource($parkingRequest), 201);
@@ -29,6 +34,7 @@ class RequestController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
+
 
     public function acceptParkingRequest(int $requestId)
     {
@@ -39,6 +45,17 @@ class RequestController extends Controller
             return $this->errorResponse($e->getMessage());
         }
     }
+
+
+    public function startParkingRequest(int $requestId)
+{
+    try {
+        $request = $this->parkingRequestService->startParkingRequest($requestId);
+        return $this->successResponse('Parking request started successfully', new RequestResource($request));
+    } catch (Exception $e) {
+        return $this->errorResponse($e->getMessage());
+    }
+}
 
     public function requestCarPreparation(int $requestId)
     {

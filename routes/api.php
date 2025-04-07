@@ -93,6 +93,7 @@ Route::get('/locations', [LocationController::class, 'index']);
 
     Route::post('/parking-requests', [RequestController::class, 'createParkingRequest']);
     Route::put('/parking-requests/{id}/accept', [RequestController::class, 'acceptParkingRequest']);
+    Route::middleware('auth:sanctum')->post('/requests/{request}/start', [RequestController::class, 'startParkingRequest']);
     Route::post('/parking-requests/{id}/prepare', [RequestController::class, 'requestCarPreparation']);
     Route::post('/parking-requests/{id}/complete', [RequestController::class, 'completeParkingRequest']);
     Route::post('/cal/{req}', [ValetTimeController::class, 'parkingTime']);
@@ -136,7 +137,7 @@ Route::get('/get-location/{agent_id}', [TruckungController::class, 'getLocation'
 ////
 
 Route::get('/loyalty-points', [LoyaltyPointController::class, 'show']);
-Route::post('/use-loyalty-points', [LoyaltyPointController::class, 'useLoyaltyPoints']);
+Route::post('/use-loyalty-points/{request_id}', [LoyaltyPointController::class, 'useLoyaltyPoints']);
 Route::post('/earn-loyalty-points', [LoyaltyPointController::class, 'earnLoyaltyPoints']);
 Route::post('/generate-invoice', [LoyaltyPointController::class, 'generateInvoice']);
 Route::middleware('auth:sanctum')->get('/cheak-points', [LoyaltyPointController::class, 'checkLoyaltyPoints']);

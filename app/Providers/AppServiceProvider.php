@@ -8,6 +8,7 @@ use App\Models\ValetTime;
 use App\Observers\CarObserver;
 use App\Observers\PaymentObserver;
 use App\Observers\PriceObserver;
+use App\Observers\RequestObserver;
 use App\Observers\ValetTimeObserver;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         Car::observe(CarObserver::class);
         Payment::observe(PaymentObserver::class);
         Request::observe(ValetTimeObserver::class);
+        Request::observe(RequestObserver::class);
 
     }
 }

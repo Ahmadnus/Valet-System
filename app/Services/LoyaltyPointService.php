@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\app\traits\CheckRequestStatus;
 use App\Models\LoyaltyPoint;
 use App\Models\Invoice;
 use App\Models\ValetTime;
@@ -12,6 +13,7 @@ use Exception;
 
 class LoyaltyPointService
 {
+    use CheckRequestStatus;
     /**
      * Check user loyalty points
      */
@@ -30,11 +32,11 @@ class LoyaltyPointService
     /**
      * Use loyalty points for a transaction
      */
-    public function useLoyaltyPoints($points)
+    public function useLoyaltyPoints($points,$requestId)
     {
         $user = Auth::user();
-
-        DB::beginTransaction(); // Start transaction
+        $this->checkRequestStatusInPreparing($requestId);
+        DB::beginTransaction();
 
         try {
             $valetTime = ValetTime::where('user_id', $user->id)->first();
@@ -51,7 +53,7 @@ class LoyaltyPointService
             $loyalty->save();
 
 
-            $remainingBalance = max(0, $price - ($points / 10)); // Assuming 1 point = $0.1
+            $remainingBalance = max(0, $price - ($points / 10));
 
 
             $invoice = Invoice::create([

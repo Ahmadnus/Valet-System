@@ -53,6 +53,7 @@ class PaymentObserver
 
             Log::info("Payment history and loyalty points updated for user_id: {$user->id}");
 
+
         }
     }
 

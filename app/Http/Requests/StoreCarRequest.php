@@ -27,6 +27,7 @@ class StoreCarRequest extends FormRequest
             'plate_number' => 'sometimes|string|unique:cars,plate_number,' ,
 
             'cartypeable_id' => 'sometimes|integer',
+            'image' => '',
             'cartypeable_type' => ['sometimes', 'string', Rule::in($carTypes)],
         ];
     }

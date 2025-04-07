@@ -47,13 +47,7 @@ class CarController extends Controller
     /**
      * Display a specific car.
      */
-    public function show(Car $car)
-    {
-        if ($car->user_id !== Auth::id()) {
-            return $this->errorResponse('Unauthorized', 403);
-        }
-        return $this->successResponse('Car retrieved successfully', new CarResource($car));
-    }
+
 
     /**
      * Update the specified car.

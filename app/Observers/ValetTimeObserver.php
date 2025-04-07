@@ -20,44 +20,39 @@ class ValetTimeObserver
      */
     public function updated(UserRequest $request)
     {
-        // Ensure the request has required timestamps
-        if (!$request->completed_time || !$request->in_progress_time) {
-            Log::warning("Cannot calculate valet time: Missing timestamps for request_id: {$request->id}");
-            return;
+        if ($request->isDirty('status') && $request->status === \App\Models\Request::STATUS_PREPARING) {
+
+            // Safety check for timestamps
+            if (!$request->in_progress_time || !$request->completed_time) {
+                Log::warning("Missing timestamps for valet time calculation - Request ID: {$request->id}");
+                return;
+            }
+
+            // 🕒 Calculate time difference
+            $timeDiff = abs(now()->diffInHours($request->in_progress_time));
+            $request->total_hours = $timeDiff;
+            $request->saveQuietly(); // to avoid infinite observer loop
+
+            $location = Location::find($request->location_id);
+            if (!$location) {
+                Log::warning("Location not found for request ID: {$request->id}");
+                return;
+            }
+
+            $price = $timeDiff * $location->cost;
+
+            ValetTime::updateOrCreate(
+                ['request_id' => $request->id],
+                [
+                    'user_id' => $request->user_id,
+                    'hours' => $timeDiff,
+                    'price' => $price,
+                ]
+            );
+
+            Log::info("ValetTime calculated & saved for Request ID: {$request->id}, User ID: {$request->user_id}");
         }
-
-        // Fetch the location to determine cost
-        $location = Location::find($request->location_id);
-
-        if (!$location) {
-            Log::warning("Cannot calculate valet time: Location not found for request_id: {$request->id}");
-            return;
-        }
-
-        // Fetch total hours
-        $totalHours = $request->total_hours ?? 0;
-
-        if ($totalHours <= 0) {
-            Log::warning("Cannot calculate valet time: Invalid total_hours for request_id: {$request->id}");
-            return;
-        }
-
-        // Calculate price
-        $price = $totalHours * $location->cost;
-
-        // Create ValetTime record
-        ValetTime::create([
-            'request_id' => $request->id,
-            'user_id' => $request->user_id,
-            'hours' => $totalHours,
-            'price' => $price,
-
-        ]);
-
-        Log::info("Valet time recorded for user_id: {$request->user_id}, request_id: {$request->id}");
     }
-
-
     /**
      * Handle the ValetTime "deleted" event.
      */

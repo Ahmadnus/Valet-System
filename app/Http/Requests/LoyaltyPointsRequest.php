@@ -23,6 +23,7 @@ class LoyaltyPointsRequest extends FormRequest
     {
         return [
             'points' => ['required', 'integer', 'min:1'],
+
         ];
     }
 }

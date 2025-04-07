@@ -36,7 +36,7 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Customer User',
 
-            'phone_number' => '123456789401',
+            'phone_number' => '+963939115126',
             'password' => Hash::make('password'),
             'role' => 'valet_customer',
             'userable' => Customer::create([]),
@@ -68,7 +68,7 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Manager User',
 
-            'phone_number' => '+963939115126',
+            'phone_number' => '88888888',
             'password' => Hash::make('password'),
             'role' => 'platform_manager',
             'userable' => Manager::create([]),

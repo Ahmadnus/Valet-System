@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Car;
 
+use App\Http\Resources\CarTypeResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,8 +17,8 @@ class CarResource extends JsonResource
             'cartypeable_id' => $this->cartypeable_id,
             'cartypeable_type' => $this->cartypeable_type,
             'plate_number' => $this->plate_number,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'car_type' => new CarTypeResource($this->whenLoaded('cartypeable')),
+
         ];
     }
 }

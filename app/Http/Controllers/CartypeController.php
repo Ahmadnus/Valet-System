@@ -6,6 +6,8 @@ use App\Models\CarType;
 use Illuminate\Http\Request;
 use App\Http\Requests\CartypeRequest;
 use App\app\Traits\ApiResponse;
+use App\Http\Resources\CarTypeResource;
+
 class CartypeController extends Controller
 {
     use ApiResponse;
@@ -13,11 +15,7 @@ class CartypeController extends Controller
     public function index()
     {
         $cartypes = Cartype::all()->map(function ($cartype) {
-            return [
-                'id' => $cartype->id,
-                'type' => $cartype->type,
-                'logo' => $cartype->getFirstMediaUrl('logos'),
-            ];
+            return new CarTypeResource($cartype);
         });
 
         return $this->successResponse('Car types retrieved successfully', $cartypes);

@@ -2,62 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\app\Traits\ApiResponse;
 use App\Models\FeeWaiverRequest;
 use App\Models\Request as UserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\RequestFeeWaiverRequest;
+use App\Http\Requests\HandleFeeWaiverRequest;
+
+use App\Services\FeeWaiverService;
 
 class FeeWaiverController extends Controller
 {
-    public function requestFeeWaiver(Request $request)
-{
-    $user = Auth::user();
+    use ApiResponse;
 
-    $feeWaiver = FeeWaiverRequest::create([
-        'user_id' => $user->id,
-        'request_id' => $request->input('request_id'),
-        'status' => 'pending',
-    ]);
+    protected FeeWaiverService $feeWaiverService;
 
-    // Notify valet host & provider (use Firebase or Pusher)
-    // Notification::send($valetHostsAndProviders, new FeeWaiverRequested($feeWaiver));
-
-    return response()->json(['success' => true, 'message' => 'Fee waiver request sent.']);
-}
-
-public function handleFeeWaiver(Request $request, $id)
-{
-    $feeWaiver = FeeWaiverRequest::findOrFail($id);
-
-    if ($feeWaiver->status !== 'pending') {
-        return response()->json(['message' => 'This request has already been processed.'], 400);
+    public function __construct(FeeWaiverService $feeWaiverService)
+    {
+        $this->feeWaiverService = $feeWaiverService;
     }
 
-    $action = $request->input('action'); // 'approve' or 'reject'
+    public function requestFeeWaiver(RequestFeeWaiverRequest $request)
+    {
+        try {
+            $feeWaiver = $this->feeWaiverService->requestFeeWaiver($request->validated()['request_id']);
 
-    if (!in_array($action, ['approve', 'reject'])) {
-        return response()->json(['error' => 'Invalid action. Use approve or reject.'], 400);
+            return $this->successResponse('Fee waiver request sent.', $feeWaiver);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
     }
 
-    $status = $action === 'approve' ? 'approved' : 'rejected';
+    public function handleFeeWaiver(HandleFeeWaiverRequest $request, $id)
+    {
+        try {
+            $feeWaiver = FeeWaiverRequest::findOrFail($id);
+            $updated = $this->feeWaiverService->handleFeeWaiver($feeWaiver, $request->validated()['action']);
 
-    $feeWaiver->update([
-        'status' => $status,
-        'approved_by' => Auth::id(),
-    ]);
-
-    if ($status === 'approved') {
-        // Find the user request and update the fee_waived field
-        $userRequest = UserRequest::findOrFail($feeWaiver->request_id);
-        $userRequest->update(['fee_waived' => true]);
-
-        // Also update the requests table (assuming UserRequest is related to requests)
-        UserRequest::where('id', $userRequest->id)->update(['fee_waived' => true]);
+            return $this->successResponse("Fee waiver request {$updated->status} successfully.", $updated);
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
     }
-
-    return response()->json([
-        'success' => true,
-        'message' => "Fee waiver request {$status} successfully."
-    ]);
-}
 }
