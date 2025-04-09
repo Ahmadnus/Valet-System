@@ -16,7 +16,7 @@ class RequestResource extends JsonResource
             'id' => $this->id,
 
 
-            'id' => $this->id,
+
             'user' => $this->user ? $this->user->toArray() : null,
             'car' => $this->car ? $this->car->toArray() : null,
             'location' => $this->location ,

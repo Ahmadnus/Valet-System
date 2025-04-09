@@ -37,20 +37,20 @@ class TruckingService
             if (Auth::id() !== $car->user_id) {
                 throw new Exception('Unauthorized access');
             }
+            $loc=['agent_id' => $data['agent_id'], 'latitude' => $data['latitude'], 'longitude' => $data['longitude']];
 
+            $location = AgentLocation::updateOrCreate(
 
-            $locatione = AgentLocation::updateOrCreate(
-                ['car_id' => $car->id],
-                ['agent_id' => $data['agent_id'], 'latitude' => $data['latitude'], 'longitude' => $data['longitude']]
+                $loc
             );
 
             DB::commit();
 
 
-            broadcast(new TruckingCar($car->id, $data['latitude'], $data['longitude']));
+            broadcast(new TruckingCar($data['agent_id'], $data['latitude'], $data['longitude']));
 
             Log::info("Location updated for agent ID {$data['agent_id']} on car ID {$car->id}");
-            return $locatione;
+            return $location;
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Error updating location: " . $e->getMessage());
