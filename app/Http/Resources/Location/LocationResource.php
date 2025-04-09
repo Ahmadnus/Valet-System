@@ -11,10 +11,11 @@ class LocationResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
-            'distance_km' => round($this->distance, 2), // Rounded to 2 decimal places
+            'distance' => $this->distance, // This comes from your raw select query
+            'name' => $this->name, // Use translation based on the language
+            'parking_slots' => $this->whenLoaded('parkingSlots'), // Assuming you have a ParkingSlotResource
         ];
     }
 }

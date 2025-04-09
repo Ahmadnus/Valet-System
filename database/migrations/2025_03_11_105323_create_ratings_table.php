@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ratings', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->foreignId('rater_id')->constrained('users');
             $table->foreignId('ratee_id')->constrained('users');
             $table->string('rater_role');
             $table->string('ratee_role');
             $table->integer('rating');
-            $table->text('comment')->nullable();
+
             $table->timestamps();
         });
     }

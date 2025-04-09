@@ -22,6 +22,7 @@ class RatingService
 
     protected function createRating(int $rateeId, array $data, string $expectedRaterRole, string $expectedRateeRole): Rating
     {
+        $lang=app()->getlocale();
         $rater = Auth::user();
         $ratee = User::findOrFail($rateeId);
 
@@ -35,15 +36,19 @@ class RatingService
         DB::beginTransaction();
 
         try {
-            $rating = Rating::create([
+            $ratingData = [
                 'rater_id' => $rater->id,
                 'ratee_id' => $ratee->id,
                 'rater_role' => $raterRole,
                 'ratee_role' => $rateeRole,
                 'rating' => $data['rating'],
-                'comment' => $data['comment'] ?? null,
-            ]);
+                'ar' => ['comment' => $data['comment']['ar'] ?? ''],
+                'en' => ['comment' => $data['comment']['en'] ?? ''],
 
+            ];
+
+
+            $rating = Rating::create($ratingData);
             DB::commit();
             Log::info("Rating created", ['rater_id' => $rater->id, 'ratee_id' => $ratee->id]);
 

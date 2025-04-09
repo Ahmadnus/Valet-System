@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notification_user', function (Blueprint $table) {
+        Schema::create('cartype_translations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('notification_id')->constrained()->onDelete('cascade');
-            $table->boolean('is_read')->default(false);
-            $table->timestamps();
+            $table->foreignId('cartype_id')->constrained()->onDelete('cascade');
+            $table->string('locale')->index();
+            $table->string('type');
+            $table->unique(['cartype_id', 'locale']);
+
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notification_user');
+        Schema::dropIfExists('cartype_translations');
     }
 };

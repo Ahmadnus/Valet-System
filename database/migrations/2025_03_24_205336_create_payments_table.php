@@ -10,7 +10,7 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
+    { Schema::disableForeignKeyConstraints();
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('request_id')->constrained()->onDelete('cascade'); // Link to valet request

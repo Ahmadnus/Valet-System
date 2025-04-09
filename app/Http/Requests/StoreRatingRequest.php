@@ -25,7 +25,9 @@ class StoreRatingRequest extends FormRequest
         return [
             'customer_id' => '',
             'rating' => '',
-            'comment' => '',
+            'comment.ar' => '',
+            'comment.en' => '',
+
         ];
 
     }

@@ -22,8 +22,10 @@ class CartypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|string|max:255',
-            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'type.en' => '',
+            'type.ar' => '',
+
+            'logo' => '', // 2MB max
         ];
     }
 }

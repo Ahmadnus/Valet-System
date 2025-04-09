@@ -10,7 +10,7 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
+    { Schema::disableForeignKeyConstraints();
         Schema::create('location_agent', function (Blueprint $table) {
             $table->id();
             $table->foreignId('location_id')->constrained('locations')->onDelete('cascade');

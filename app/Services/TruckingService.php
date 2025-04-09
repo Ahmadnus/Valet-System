@@ -38,7 +38,7 @@ class TruckingService
                 throw new Exception('Unauthorized access');
             }
 
-            // Update or create location
+
             $locatione = AgentLocation::updateOrCreate(
                 ['car_id' => $car->id],
                 ['agent_id' => $data['agent_id'], 'latitude' => $data['latitude'], 'longitude' => $data['longitude']]
@@ -46,7 +46,7 @@ class TruckingService
 
             DB::commit();
 
-            // Broadcast tracking event
+
             broadcast(new TruckingCar($car->id, $data['latitude'], $data['longitude']));
 
             Log::info("Location updated for agent ID {$data['agent_id']} on car ID {$car->id}");
@@ -54,7 +54,7 @@ class TruckingService
         } catch (Exception $e) {
             DB::rollBack();
             Log::error("Error updating location: " . $e->getMessage());
-            throw $e; // Let the controller handle the error
+            throw $e;
         }
     }
     public function getLocation($agentId)
@@ -65,7 +65,7 @@ class TruckingService
             throw new Exception('Location not found');
         }
 
-        return $location; // Return the model
+        return $location;
     }
 
 

@@ -10,7 +10,7 @@ class Car extends Model implements HasMedia
 {
     use HasFactory,InteractsWithMedia;
 
-    protected $fillable = ['user_id', 'plate_number', 'key_box', 'cartypeable_id', 'cartypeable_type'];
+    protected $guarded = [];
 
     public function user()
     {

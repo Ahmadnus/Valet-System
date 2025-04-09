@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+
         Schema::disableForeignKeyConstraints();
         Schema::create('requests', function (Blueprint $table) {
             $table->id();
@@ -19,6 +20,7 @@ return new class extends Migration
             $table->foreignId('parking_slot_id')->constrained('parking_slots')->onDelete('cascade');
             $table->foreignId('location_id')->nullable()->constrained('locations')->onDelete('set null');
             $table->enum('status', ['pending', 'accepted', 'in_progress', 'preparing', 'completed', 'canceled'])->default('pending');
+            $table->boolean('fee_waived')->default(false); // <-- FIXED HERE
             $table->foreignId('valet_agent_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->decimal('total_hours', 5, 2)->nullable();
             $table->timestamp('in_progress_time')->nullable();

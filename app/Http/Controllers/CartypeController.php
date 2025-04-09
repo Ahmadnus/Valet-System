@@ -23,7 +23,12 @@ class CartypeController extends Controller
 
     public function store(CartypeRequest $request)
     {
-        $cartype = Cartype::create(['type' => $request->type]);
+        // Assuming 'type' is structured like: ['en' => 'Sedan', 'ar' => 'سيدان']
+        $cartype = Cartype::create([
+            'en' => ['type' => $request->type['en']],
+            'ar' => ['type' => $request->type['ar']],
+        ]);
+
 
         if ($request->hasFile('logo')) {
             $cartype->addMedia($request->file('logo'))->toMediaCollection('logos');
@@ -31,13 +36,12 @@ class CartypeController extends Controller
 
         $data = [
             'id' => $cartype->id,
-            'type' => $cartype->type,
+            'type' => $cartype->type, // Will return based on the current app locale
             'logo' => $cartype->getFirstMediaUrl('logos'),
         ];
 
         return $this->successResponse('Car type created successfully!', $data, 201);
     }
-
     public function show(Cartype $cartype)
     {
         $data = [

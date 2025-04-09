@@ -38,6 +38,8 @@ class RatingController extends Controller
     public function rateCustomer(StoreRatingRequest $request, $customerId)
     {
         try {
+            $lang=app()->getlocale();
+
             $rating = $this->ratingService->rateCustomer($request->validated(), $customerId);
             return $this->successResponse('Rating submitted successfully', new RatingResource($rating), 201);
         } catch (\Exception $e) {

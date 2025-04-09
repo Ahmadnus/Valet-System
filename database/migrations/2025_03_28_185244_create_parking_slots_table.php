@@ -10,11 +10,12 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
+    { Schema::disableForeignKeyConstraints();
         Schema::create('parking_slots', function (Blueprint $table) {
             $table->id();
             $table->foreignId('location_id')->constrained('locations')->onDelete('cascade');
 
+            $table->string('slot_number');
 
             $table->enum('status', ['available', 'occupied', 'reserved'])->default('available');
             $table->timestamps();

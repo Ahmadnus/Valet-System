@@ -7,6 +7,7 @@ use App\Services\Payments\PaymentService;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\LoyaltyPoint;
+use App\Models\ValetTime;
 use App\Models\PaymentHistory;
 use App\Services\Payments\StripeService;
 use Illuminate\Http\Request;
@@ -54,5 +55,13 @@ class PaymentController extends Controller
             'success' => true,
             'payment_history' => $paymentHistory
         ]);
+    }
+
+
+    public function showPay(){
+        $user = Auth::user();
+
+        $payment = ValetTime::where('user_id', $user->id)->get();
+return $payment;
     }
 }

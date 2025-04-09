@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Http\Request;
 use App\app\Traits\ApiResponse;
 use App\Models\Car;
 use App\Services\CarService;
@@ -27,7 +27,12 @@ class CarController extends Controller
      */
     public function index()
     {
+        $lang=app()->getlocale();
+
         $cars = Auth::user()->cars;
+        $cars->load('cartypeable');
+
+
         return $this->successResponse('Cars retrieved successfully', CarResource::collection($cars));
     }
 
@@ -36,6 +41,7 @@ class CarController extends Controller
      */
     public function store(StoreCarRequest $request)
     {
+        $lang=app()->getlocale();
         try {
             $car = $this->carService->store($request->validated());
             return $this->successResponse('Car added successfully', new CarResource($car), 201);

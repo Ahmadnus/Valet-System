@@ -14,6 +14,7 @@ class LocationService
 {
     public function findNearestLocation(FindNearestLocationRequest $request)
     {
+        $lang=app()->getlocale();
         $userLat = $request->latitude;
         $userLng = $request->longitude;
 
@@ -22,7 +23,7 @@ class LocationService
         }
 
         $locations = Location::selectRaw("
-            id, name, latitude, longitude,
+            id, latitude, longitude,
             (6371 * acos(
                 cos(radians(?)) * cos(radians(latitude)) *
                 cos(radians(longitude) - radians(?)) +
@@ -38,7 +39,7 @@ class LocationService
             throw new \Exception('No locations found');
         }
 
-        return $locations;
+        return LocationResource::collection($locations);
     }
 
     public function addLocation(LocationRequest $request)
@@ -51,13 +52,17 @@ class LocationService
             throw new \Exception("Location with this name already exists.");
         }
 
-        $location = Location::create([
-            'name' => $request->name,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'host_id' => $request->host_id,
-            'cost' => $request->cost,
-        ]);
+        $locationAt = [
+            'latitude' => $request['latitude'],
+            'longitude' => $request['longitude'],
+            'cost' => $request['cost'],
+            'host_id' => $request['host_id'],
+            'ar' => ['name' => $request['name']['ar'] ?? ''],
+            'en' => ['name' => $request['name']['en'] ?? ''],
+        ];
+
+$location=Location::create($locationAt);
+
 
         Log::info("Location created: {$location->name}");
 

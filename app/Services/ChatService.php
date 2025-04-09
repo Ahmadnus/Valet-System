@@ -31,7 +31,7 @@ class ChatService
             abort(403, 'Unauthorized action.');
         }
 
-        // Check if the chat already exists
+
         $existingChat = Chat::where([
             'agent_id' => $data['agent_id'],
             'customer_id' => $data['customer_id']
@@ -42,7 +42,7 @@ class ChatService
             return $existingChat;
         }
 
-        // Create a new chat
+
         $chat = Chat::create([
             'agent_id' => $data['agent_id'],
             'customer_id' => $data['customer_id'],
@@ -70,7 +70,7 @@ class ChatService
             abort(401, 'Unauthorized.');
         }
 
-        // Ensure the user sending the message is part of the chat
+
         if (!in_array($userId, [$chat->agent_id, $chat->customer_id])) {
             Log::warning("Unauthorized message attempt by User ID {$userId} in Chat ID {$chat->id}");
             abort(403, 'Unauthorized to send messages in this chat.');

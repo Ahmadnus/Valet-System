@@ -10,12 +10,16 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('notifications', function (Blueprint $table) {
+    {    Schema::disableForeignKeyConstraints();
+        Schema::create('rating_translations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->text('message');
-            $table->boolean('is_read')->default(false);
+
+            $table->string('locale')->index();
+            $table->string('comment');
+            $table->foreignId('rating_id')->constrained('ratings')->onDelete('cascade');
+
+    $table->unique(['rating_id', 'locale']);
+
             $table->timestamps();
         });
     }
@@ -25,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('rating_translations');
     }
 };

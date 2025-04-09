@@ -22,13 +22,13 @@ class StoreCarRequest extends FormRequest
      */
     public function rules(): array
     {
-        $carTypes = Cartype::pluck('type')->toArray();
+
         return [
             'plate_number' => 'sometimes|string|unique:cars,plate_number,' ,
 
-            'cartypeable_id' => 'sometimes|integer',
+            'cartypeable_id' => '',
             'image' => '',
-            'cartypeable_type' => ['sometimes', 'string', Rule::in($carTypes)],
+
         ];
     }
 }

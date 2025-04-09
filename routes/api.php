@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\TruckungController;
 use App\Http\Controllers\LoyaltyPointController;
 use Illuminate\Support\Facades\Broadcast;
+use App\Http\Middleware\lang;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -36,7 +37,7 @@ Route::prefix('auth')->group(function () {
   Route::post('loginAdmin', [AuthController::class, "loginAd"]);
   Route::post('logout/{id}', [AuthController::class, "logout"])->name('logout');
 });
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->middleware(lang::class)->group(function () {
     Route::get('/cars', [CarController::class, 'index']); // Get user cars
     Route::post('/cars', [CarController::class, 'store']); // Create car
     Route::put('/cars/{car}', [CarController::class, 'update']); // Update car
@@ -55,7 +56,7 @@ Route::post('/send-request', [RequestController::class, 'sendRequest'])->middlew
 Route::post('/rate/{id}', [RatingController::class, 'store'])->middleware('auth:sanctum');
 
 
-Route::post('/find-nearest', [LocationController::class, 'findNearest']);
+Route::post('/find-nearest', [LocationController::class, 'findNearest'])->middleware(lang::class);
 Route::get('/find-parking/{id}', [LocationController::class, 'show']);
 
 
@@ -70,7 +71,7 @@ Route::get('/find-parking/{id}', [LocationController::class, 'show']);
 
 
 
-Route::middleware(['auth:sanctum', 'platform_manager'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/role-counts', [ManagerController::class, 'getUserCountsByRole']);
     Route::get('/users', [ManagerController::class, 'index']);
     Route::get('/users/{id}', [ManagerController::class, 'show']);
@@ -152,6 +153,7 @@ Route::post('/fee-waiver/{id}', [FeeWaiverController::class, 'handleFeeWaiver'])
 
 ///
 Route::get('/payment-history', [PaymentController::class, 'showPaymentHistory'])->middleware('auth:sanctum');
+Route::get('/mypayment', [PaymentController::class, 'showPay'])->middleware('auth:sanctum');
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/rate-agent/{id}', [RatingController::class, 'rateAgent']);
     Route::post('/rate-customer/{id}', [RatingController::class, 'rateCustomer']);

@@ -23,12 +23,21 @@ class FeeWaiverService
 
     use CheckRequestStatus;
 
-    public function requestFeeWaiver(int $requestId): FeeWaiverRequest
+    public function requestFeeWaiver(int $requestId)
     {
         $user = Auth::user();
 
-        // Check the request status using the trait method
+        // Ensure the request is still in 'preparing' state
         $this->checkRequestStatusInPreparing($requestId);
+
+        // Check if a fee waiver request already exists for this user and request
+        $existingRequest = userRequest::where('user_id', $user->id)
+
+            ->first();
+
+        if ($existingRequest) {
+
+
 
         $feeWaiver = FeeWaiverRequest::create([
             'user_id' => $user->id,
@@ -38,7 +47,7 @@ class FeeWaiverService
 
         Log::info("User {$user->id} requested fee waiver for request {$requestId}.");
 
-        // Send notification to valet host
+
         $this->notificationService->sendNotification(
             title: 'Fee Waiver Request',
             body: 'A customer has requested a fee waiver for a parking service.',
@@ -51,8 +60,10 @@ class FeeWaiverService
             type: NotificationType::ASK_FOR_WAIVE
         );
 
-        return $feeWaiver;
-    }
+        return $feeWaiver;}}
+
+
+
 
 public function handleFeeWaiver(FeeWaiverRequest $feeWaiver, string $action): FeeWaiverRequest
 {

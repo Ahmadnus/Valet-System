@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('request_id')->constrained('requests')->onDelete('cascade');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->foreignId('approved_by')->nullable()->constrained('users')->onDelete('set null');
+
             $table->timestamps();
         });
     }

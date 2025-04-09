@@ -9,6 +9,7 @@ use App\Http\Resources\Location\LocationResource;
 use App\Models\Location;
 use App\Models\ParkingSlot;
 use App\Services\LocationService;
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
@@ -23,6 +24,7 @@ class LocationController extends Controller
     public function findNearest(FindNearestLocationRequest $request, LocationService $locationService)
     {
         try {
+
             $locations = $locationService->findNearestLocation($request);
             return $this->successResponse('Nearest locations retrieved successfully', $locations);
         } catch (\DomainException | \InvalidArgumentException $e) {
