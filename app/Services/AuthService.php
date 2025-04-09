@@ -114,7 +114,7 @@ class AuthService
             }
             return ([
                 'message' => 'OTP verified successfully!',
-                'token' => $token,
+
                 'user' => new UserResource($user),
             ]);
 
