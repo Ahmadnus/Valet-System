@@ -23,9 +23,9 @@ class UpdateCarRequest extends FormRequest
     {
         return [
             'plate_number' => 'sometimes|string|unique:cars,plate_number,' ,
-            'key_box' => 'sometimes|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'cartypeable_id' => 'sometimes|integer',
-            'cartypeable_type' => 'sometimes|string|in:TypeA,TypeB,TypeC',
+
         ];
     }
 }

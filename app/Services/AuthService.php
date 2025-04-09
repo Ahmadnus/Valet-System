@@ -63,7 +63,6 @@ class AuthService
 
     private function storeFcmToken(User $user, string $token): void
     {
-        // تحقق من التكرار عشان ما تسجل نفس التوكن مرتين
         if (!$user->fcmTokens()->where('token', $token)->exists()) {
             $user->fcmTokens()->create([
                 'token' => $token,

@@ -133,9 +133,39 @@ public function requestCarPreparation(int $requestId)
 
     return $parkingRequest;
 }
+public function requestCompeted(int $requestId)
+{
+    $parkingRequest = $this->getParkingRequest($requestId, Request::STATUS_IN_PROGRESS);
+
+    $parkingRequest->update([
+        'status' => Request::STATUS_PREPARING,
+        'completed_time' => now(),
+
+    ]);
+
+    Log::info("Request $requestId moved to preparing status.");
+
+    return $parkingRequest;
+}
+public function completeValet(int $id,  $plateNumber)
+{
+    $parkingRequest = $this->getParkingRequest($id, Request::STATUS_PREPARING);
+$plateNumber=Car::where('plate_number',$plateNumber);
+
+if($plateNumber){
+    $parkingRequest->update([
+        'status' => Request::STATUS_COMPLETED,
 
 
-    // Helper Methods
+    ]);
+
+
+
+    return $parkingRequest;}
+}
+
+
+//
 
     private function checkCarOwnership(int $userId, int $carId)
     {

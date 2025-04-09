@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\StoreCarRequest;
 use App\Models\Car;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UpdateCarRequest;

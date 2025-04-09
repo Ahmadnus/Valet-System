@@ -22,8 +22,8 @@ class StartChatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'agent_id' => 'required|exists:users,id',
-            'customer_id' => 'required|exists:users,id',
+            'agent_id' => 'exists:users,id',
+            'customer_id' => 'exists:users,id',
         ];
     }
 }

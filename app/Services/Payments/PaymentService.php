@@ -21,10 +21,14 @@ class PaymentService
     {
 
 
+        $valetTime = $userRequest->valetTime->where('user_id', Auth::id())->first();
+        $amountInCents = $valetTime->price * 100;
+
+
         $method = strtolower(str_replace('Service', '', class_basename($this->payment)));
         $userRequest->payment()->create([
 
-                'amount' => $userRequest->total_price,
+                'amount' =>     $amountInCents,
                 'payment_method' => $method,
 
             ]);

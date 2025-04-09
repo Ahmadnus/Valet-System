@@ -53,7 +53,11 @@ class CarController extends Controller
     /**
      * Display a specific car.
      */
-
+    public function show(Car $car)
+    {
+        $car = $this->carService->show($car);
+        return $this->successResponse('Car fetched successfully', $car);
+    }
 
     /**
      * Update the specified car.

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\app\Traits\ApiResponse;
+use App\Http\Requests\CompleteValetRequest as RequestsCompleteValetRequest;
 use App\Http\Requests\StoreRequestRequest;
 use App\Http\Resources\Request\RequestResource;
 use App\Services\Requests\ParkingRequestService;
+use App\Services\Requests\CompleteValetRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -67,11 +69,15 @@ class RequestController extends Controller
         }
     }
 
-    public function completeParkingRequest(int $requestId, Request $request)
+    public function completeParkingRequest(int $id, RequestsCompleteValetRequest  $request)
     {
         try {
-            $parkingRequest = $this->parkingRequestService->completeParkingRequest($requestId, $request->plate_number);
-            return $this->successResponse('Parking request completed successfully', new RequestResource($parkingRequest));
+
+            $validated = $request->validated();
+
+            $parkingRequest = $this->parkingRequestService->completeValet($id,$request->validated());
+
+            return $this->successResponse('Valet completed successfully', new RequestResource($parkingRequest));
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }

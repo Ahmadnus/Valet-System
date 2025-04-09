@@ -2,6 +2,7 @@
 
 namespace App\Services\Payments;
 
+use App\app\traits\CheckRequestStatus;
 use App\Models\Location;
 use App\Models\Request as UserRequest;
 use App\Models\ValetTime;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class StripeService implements PaymentsInterface
 {
+    use CheckRequestStatus;
     /**
      * Create a new class instance.
      */
@@ -19,63 +21,60 @@ class StripeService implements PaymentsInterface
         //
     }
     public function pay(UserRequest $userRequest)
-    {
-        info('Processing valet payment...');
-
-        // Fetch the user's valet request with related valet time
-        $request = UserRequest::where('user_id', Auth::id())
-            ->with('valetTime')
-            ->first(); // Get the latest request
-
-        if (!$request || !$request->valetTime) {
-            return response()->json(['error' => 'No valid valet request found'], 404);
-        }
-        $valetTime = $userRequest->valetTime->where('user_id', Auth::id())->first();
-
-        $Valetinfo=ValetTime::where('user_id', Auth::id())->first();
-
-        $hours = $valetTime->hours??1;
-
-        $locationid=UserRequest::where('user_id', Auth::id())->first();
-        $cost=Location::where('id',$locationid->location_id)->with("requests")->first();
-
-        $totalPrice = $hours * $cost->cost;
-
-        $amountInCents = $valetTime->price*100;
+{
+    info('Processing valet payment...');
 
 
-        \Stripe\Stripe::setApiKey(config('services.stripe.secret_key'));
+    $this->checkRequestStatusInPreparing($userRequest->id);
 
 
-            $checkoutSession = \Stripe\Checkout\Session::create([
-                'payment_method_types' => ['card'],
-                'line_items' => [[
-                    'price_data' => [
-                        'currency' => 'usd',
-                        'unit_amount' => $amountInCents,
-                        'product_data' => [
-                            'name' => 'Valet Parking Service',
-                            'description' => "{$hours} hours of valet service",
-                        ],
-                    ],
-                    'quantity' => 1,
-                ]],
-                'mode' => 'payment',
-                'success_url' => url('payment-success?session_id={CHECKOUT_SESSION_ID}'),
-                'cancel_url' => url('/cancel'),
-            ]);
+    $valetTime = $userRequest->valetTime->where('user_id', Auth::id())->first();
+    if (!$valetTime) {
+        return response()->json(['error' => 'No valid valet time found'], 404);
+    }
 
-            Log::info('Stripe Checkout Session Created:', ['session_id' => $checkoutSession->id]);
+    $hours = $valetTime->hours ?? 1;
 
-            // Save the payment
-            $userRequest->payment()->update([
-                'amount' => $amountInCents,
+    $location = Location::find($userRequest->location_id);
+    if (!$location) {
+        return response()->json(['error' => 'Location not found'], 404);
+    }
+
+    $amountInCents = $valetTime->price * 100;
 
 
-                'stripe_session_id' => $checkoutSession->id,
-            ]);
+    \Stripe\Stripe::setApiKey(config('services.stripe.secret_key'));
 
-            Log::info('Payment record created:', ['stripe_session_id' => $checkoutSession->id]);
-            return response()->json(['url' => $checkoutSession->url, 'session_id' => $checkoutSession->id], 200);
+    $checkoutSession = \Stripe\Checkout\Session::create([
+        'payment_method_types' => ['card'],
+        'line_items' => [[
+            'price_data' => [
+                'currency' => 'usd',
+                'unit_amount' => $amountInCents,
+                'product_data' => [
+                    'name' => 'Valet Parking Service',
+                    'description' => "{$hours} hours of valet service",
+                ],
+            ],
+            'quantity' => 1,
+        ]],
+        'mode' => 'payment',
+        'success_url' => url('payment-success?session_id={CHECKOUT_SESSION_ID}'),
+        'cancel_url' => url('/cancel'),
+    ]);
 
+    Log::info('Stripe Checkout Session Created:', ['session_id' => $checkoutSession->id]);
+
+
+    $userRequest->payment()->update([
+        'amount' => $amountInCents,
+        'stripe_session_id' => $checkoutSession->id,
+    ]);
+
+    Log::info('Payment record updated:', ['stripe_session_id' => $checkoutSession->id]);
+
+    return response()->json([
+        'url' => $checkoutSession->url,
+        'session_id' => $checkoutSession->id,
+    ], 200);
 }}

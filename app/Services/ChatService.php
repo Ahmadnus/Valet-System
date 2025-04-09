@@ -16,21 +16,16 @@ class ChatService
     public function startChat(array $data)
     {
         $user = Auth::user();
+        $roles = $user->getRoleNames();
 
-        if (!$user) {
-            Log::error("Unauthorized: No authenticated user found.");
-            abort(401, 'Unauthorized.');
-        }
-
-        if ($user->hasRole('valet_agent')) {
+        if ($roles->contains('valet_agent')) {
             $data['agent_id'] = $user->id;
-        } elseif ($user->hasRole('customer')) {
+        } elseif ($roles->contains('valet_customer')) {
             $data['customer_id'] = $user->id;
         } else {
             Log::warning("User ID {$user->id} tried to start a chat without a valid role.");
             abort(403, 'Unauthorized action.');
         }
-
 
         $existingChat = Chat::where([
             'agent_id' => $data['agent_id'],

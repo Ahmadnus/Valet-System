@@ -24,11 +24,10 @@ class StoreCarRequest extends FormRequest
     {
 
         return [
-            'plate_number' => 'sometimes|string|unique:cars,plate_number,' ,
+            'plate_number' => 'sometimes|string|unique:cars,plate_number,',
 
-            'cartypeable_id' => '',
-            'image' => '',
-
+            'cartypeable_id' => 'nullable|integer|exists:cartypes,id', // adjust based on your needs
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // optional image validation
         ];
     }
 }

@@ -38,9 +38,10 @@ Route::prefix('auth')->group(function () {
   Route::post('logout/{id}', [AuthController::class, "logout"])->name('logout');
 });
 Route::middleware('auth:sanctum')->middleware(lang::class)->group(function () {
-    Route::get('/cars', [CarController::class, 'index']); // Get user cars
-    Route::post('/cars', [CarController::class, 'store']); // Create car
-    Route::put('/cars/{car}', [CarController::class, 'update']); // Update car
+    Route::get('/cars', [CarController::class, 'index']);
+    Route::get('/car/{car}', [CarController::class, 'show']);
+    Route::post('/cars', [CarController::class, 'store']);
+    Route::put('/cars/{car}', [CarController::class, 'update']);
     Route::delete('/cars/{car}', [CarController::class, 'destroy']);
 });
 
