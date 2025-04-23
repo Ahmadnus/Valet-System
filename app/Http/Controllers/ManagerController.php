@@ -9,6 +9,9 @@ use App\Http\Requests\Manager\RoleCountRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\app\Traits\ApiResponse;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
 
 class ManagerController extends Controller
 {
@@ -23,53 +26,41 @@ class ManagerController extends Controller
 
     public function index()
     {
+        $lang = app()->getLocale();
         $users = $this->managerService->getAllUsers();
-        return $this->successResponse('Users retrieved successfully', $users);
+        return $this->successResponse(trans('Users retrieved successfully'), $users);
     }
 
     public function show($id)
     {
+        $lang = app()->getLocale();
         $user = $this->managerService->getUserById($id);
-        return $this->successResponse('User retrieved successfully', $user);
+        return $this->successResponse(trans('User retrieved successfully'), $user);
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'phone_number' => 'required|string|max:20',
-            'role' => 'required|string|exists:roles,name'
-        ]);
+    public function store(StoreUserRequest $request)
+{
+    $user = $this->managerService->createUser($request->validated());
+    return $this->successResponse(trans('User created successfully'), $user, 201);
+}
 
-        $user = $this->managerService->createUser($validated);
-        return $this->successResponse('User created successfully', $user, 201);
-    }
-
-    public function update(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|unique:users,email,' . $user->id,
-            'password' => 'sometimes|string|min:6',
-            'phone_number' => 'sometimes|string|max:20',
-            'role' => 'sometimes|string|exists:roles,name'
-        ]);
-
-        $updatedUser = $this->managerService->updateUser($user, $validated);
-        return $this->successResponse('User updated successfully', $updatedUser);
-    }
+public function update(UpdateUserRequest $request, User $user)
+{
+    $updatedUser = $this->managerService->updateUser($user, $request->validated());
+    return $this->successResponse(trans('User updated successfully'), $updatedUser);
+}
 
     public function destroy($id)
     {
+        $lang = app()->getLocale();
         $result = $this->managerService->deleteUser($id);
-        return $this->successResponse('User deleted successfully', $result);
+        return $this->successResponse(trans('User deleted successfully'), $result);
     }
 
     public function getUserCountsByRole(RoleCountRequest $request)
     {
+        $lang = app()->getLocale();
         $counts = $this->managerService->getUserCountsByRole();
-        return $this->successResponse('User role counts retrieved successfully', $counts);
+        return $this->successResponse(trans('User role counts retrieved successfully'), $counts);
     }
 }

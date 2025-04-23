@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\RequestFeeWaiverRequest;
 use App\Http\Requests\HandleFeeWaiverRequest;
-
+use App\Http\Resources\FeeWaiverResource;
 use App\Services\FeeWaiverService;
 
 class FeeWaiverController extends Controller
@@ -23,26 +23,32 @@ class FeeWaiverController extends Controller
         $this->feeWaiverService = $feeWaiverService;
     }
 
-    public function requestFeeWaiver(RequestFeeWaiverRequest $request)
-    {
-        try {
-            $feeWaiver = $this->feeWaiverService->requestFeeWaiver($request->validated()['request_id']);
+    public function requestFeeWaiver(int $requestId)
+{
+    $lang = app()->getLocale();
+    try {
+        $feeWaiver = $this->feeWaiverService->requestFeeWaiver($requestId);
 
-            return $this->successResponse('Fee waiver request sent.', $feeWaiver);
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
-        }
-    }
-
-    public function handleFeeWaiver(HandleFeeWaiverRequest $request, $id)
-    {
-        try {
-            $feeWaiver = FeeWaiverRequest::findOrFail($id);
-            $updated = $this->feeWaiverService->handleFeeWaiver($feeWaiver, $request->validated()['action']);
-
-            return $this->successResponse("Fee waiver request {$updated->status} successfully.", $updated);
-        } catch (\Exception $e) {
-            return $this->errorResponse($e->getMessage());
-        }
+        return $this->successResponse(
+            trans('Fee waiver request sent.'),
+            new FeeWaiverResource($feeWaiver)
+        );
+    } catch (\Exception $e) {
+        return $this->errorResponse($e->getMessage());
     }
 }
+
+public function handleFeeWaiver(HandleFeeWaiverRequest $request, $id)
+{   $lang = app()->getLocale();
+    try {
+        $feeWaiver = FeeWaiverRequest::findOrFail($id);
+        $updated = $this->feeWaiverService->handleFeeWaiver($feeWaiver, $request->validated()['action']);
+
+        return $this->successResponse(
+            "Fee waiver request {$updated->status} successfully.",
+            new FeeWaiverResource($updated)
+        );
+    } catch (\Exception $e) {
+        return $this->errorResponse($e->getMessage());
+    }
+}}

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class PlatformManagerMiddleware
@@ -14,11 +15,13 @@ class PlatformManagerMiddleware
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
-    {
-        if (!$request->user() || !$request->user()->hasRole('platform_manager')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+{
+    $user = Auth::user();
 
-        return $next($request);
+    if (!$user || !$user->getRoleNames()->contains('platform_manager')) {
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
+
+    return $next($request);
+}
 }

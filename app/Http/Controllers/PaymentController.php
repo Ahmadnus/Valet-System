@@ -38,7 +38,7 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Payment record not found'], 404);
         }
 
-        // Update payment status (Observer will handle history & loyalty points)
+
         $payment->update(['status' => 'completed']);
 
         return response()->json(['message' => 'Payment successful']);

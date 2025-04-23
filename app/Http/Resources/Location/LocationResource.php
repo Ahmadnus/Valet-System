@@ -7,15 +7,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class LocationResource extends JsonResource
 {
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
             'id' => $this->id,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
-            'distance' => $this->distance, // This comes from your raw select query
-            'name' => $this->name, // Use translation based on the language
-            'parking_slots' => $this->whenLoaded('parkingSlots'), // Assuming you have a ParkingSlotResource
+            'distance' => $this->distance,
+            'name' => $this->name,
+            'parking_slots' => $this->whenLoaded('parkingSlots'),
         ];
     }
 }

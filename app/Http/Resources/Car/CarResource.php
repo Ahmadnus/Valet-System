@@ -17,6 +17,7 @@ class CarResource extends JsonResource
             'cartypeable_id' => $this->cartypeable_id,
             'cartypeable_type' => $this->cartypeable_type,
             'plate_number' => $this->plate_number,
+            'image'=>$this->getFirstMediaUrl('car_images'),
             'car_type' => new CarTypeResource($this->whenLoaded('cartypeable')),
 
         ];

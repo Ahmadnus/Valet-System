@@ -106,8 +106,5 @@ public function invoices()
 {
     return $this->hasMany(Invoice::class);
 }
-public function hasRole(string $role): bool
-{
-    return $this->role === $role;
-}
+
 }

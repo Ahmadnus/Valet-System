@@ -24,9 +24,12 @@ trait CheckRequestStatus
             }
 
 
-            if ($request->status !== 'preparing') {
-                throw new \Exception('Fee waiver can only be requested when the status is "in preparing".');
-            }
+        if (
+    $request->status !== 'delivering' &&
+    !($request->status === 'in_progress' && $request->requested_by_user)
+) {
+    throw new \Exception('Fee waiver can only be requested when the status is "delivering" or "in progress with user-initiated request".');
+}
         }
 
 }

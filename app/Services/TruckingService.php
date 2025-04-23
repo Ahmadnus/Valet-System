@@ -21,8 +21,8 @@ class TruckingService
 
             DB::beginTransaction();
 
-            $modelRequest = ModelRequest::where('valet_agent_id', $data['agent_id'])
-                ->where('status', 'accepted')
+            $modelRequest = ModelRequest::where('valet_agent_id', Auth::id())
+                ->whereIn('status', ['delivering', 'accepted'])
                 ->first();
 
             if (!$modelRequest) {
@@ -34,7 +34,7 @@ class TruckingService
                 throw new Exception('Car not found');
             }
 
-            if (Auth::id() !== $car->user_id) {
+            if (Auth::id() !==     $modelRequest->valet_agent_id) {
                 throw new Exception('Unauthorized access');
             }
             $loc=['agent_id' => $data['agent_id'], 'latitude' => $data['latitude'], 'longitude' => $data['longitude']];

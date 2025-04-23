@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 use App\Models\Car;
+use App\Models\FeeWaiverRequest;
 use App\Models\Payment;
 use App\Models\Request;
 use App\Models\ValetTime;
 use App\Observers\CarObserver;
+use App\Observers\FeeWaiverRequestObserver;
 use App\Observers\PaymentObserver;
 use App\Observers\PriceObserver;
 use App\Observers\RequestObserver;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         Payment::observe(PaymentObserver::class);
         Request::observe(ValetTimeObserver::class);
         Request::observe(RequestObserver::class);
+
 
     }
 }

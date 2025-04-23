@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class Request extends Model
 {
@@ -51,6 +52,7 @@ public const STATUS_PENDING = 'pending';
 public const STATUS_ACCEPTED = 'accepted';
 public const STATUS_IN_PROGRESS = 'in_progress';
 public const STATUS_PREPARING = 'preparing';
+public const STATUS_DELIVERING = 'delivering';
 public const STATUS_COMPLETED = 'completed';
 public const STATUS_CANCELED = 'canceled';
 protected $casts = [
@@ -69,5 +71,11 @@ public function calculateTimeDifference()
   $inProgressTime = Carbon::parse($this->in_progress_time);
 
     return abs($this->completed_time->diffInHours($this->in_progress_time));
+}
+
+
+public function scopeOwnedByUser($query, ?int $userId = null)
+{
+    return $query->where('user_id', $userId ?? Auth::id());
 }
 }

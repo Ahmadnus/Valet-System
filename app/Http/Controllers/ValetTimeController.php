@@ -20,11 +20,12 @@ class ValetTimeController extends Controller
     }
     public function parkingTime(ValetTimeRequest $request, $req)
 {
+    $lang = app()->getLocale();
     $validatedData = $request->validated();
 
     $data = $this->calculateService->parkingTime($validatedData, $req);
 
-    return $this->successResponse('Parking time calculated successfully!', $data);
+    return $this->successResponse(trans('Parking time calculated successfully!'), $data);
 }
 
 }

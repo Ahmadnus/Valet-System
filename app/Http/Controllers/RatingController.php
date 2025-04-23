@@ -26,9 +26,9 @@ class RatingController extends Controller
 
     public function rateAgent(StoreRatingRequest $request, $agentId)
     {
-        try {
-            $rating = $this->ratingService->rateAgent($request->validated(), $agentId);
-            return $this->successResponse('Rating submitted successfully', new RatingResource($rating), 201);
+        try {$lang = app()->getLocale();
+            $rating = $this->ratingService->rateAgent($request->validated(), (int) $agentId);
+            return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);
         } catch (\Exception $e) {
             Log::error("Rate Agent Error: " . $e->getMessage());
             return $this->errorResponse($e->getMessage());
@@ -40,11 +40,25 @@ class RatingController extends Controller
         try {
             $lang=app()->getlocale();
 
-            $rating = $this->ratingService->rateCustomer($request->validated(), $customerId);
-            return $this->successResponse('Rating submitted successfully', new RatingResource($rating), 201);
+            $rating = $this->ratingService->rateCustomer($request->validated(), (int) $customerId);
+
+            return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);
         } catch (\Exception $e) {
             Log::error("Rate Customer Error: " . $e->getMessage());
             return $this->errorResponse($e->getMessage());
         }
+    }
+
+
+    public function getAllAgentRatings()
+    {
+        $ratings = $this->ratingService->getAllAgentRatings();
+        return RatingResource::collection($ratings);
+    }
+
+    public function getAllCustomerRatings()
+    {
+        $ratings = $this->ratingService->getAllCustomerRatings();
+        return RatingResource::collection($ratings);
     }
 }

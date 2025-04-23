@@ -27,6 +27,14 @@ class RequestObserver
 
             Log::info("ParkingSlot {$request->parking_slot_id} marked as occupied via observer.");
         }
+        if ($request->isDirty('status') && $request->status === Request::STATUS_COMPLETED) {
+            $request->parkingSlot()->update([
+                'status' => 'available'
+            ]);
+
+            Log::info("ParkingSlot {$request->parking_slot_id} marked as available via observer.");
+        }
+
     }
 
     /**

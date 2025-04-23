@@ -23,10 +23,11 @@ class LocationController extends Controller
 
     public function findNearest(FindNearestLocationRequest $request, LocationService $locationService)
     {
-        try {
 
+        try {
+            $lang = app()->getLocale();
             $locations = $locationService->findNearestLocation($request);
-            return $this->successResponse('Nearest locations retrieved successfully', $locations);
+            return $this->successResponse(trans('Nearest locations retrieved successfully'),$locations);
         } catch (\DomainException | \InvalidArgumentException $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }
@@ -35,8 +36,9 @@ class LocationController extends Controller
     public function addLocation(LocationRequest $request, LocationService $locationService)
     {
         try {
+            $lang = app()->getLocale();
             $location = $locationService->addLocation($request);
-            return $this->successResponse('Location created successfully', $location, 201);
+            return $this->successResponse(trans('Location created successfully'), $location, 201);
         } catch (\DomainException | \InvalidArgumentException $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }
@@ -45,8 +47,9 @@ class LocationController extends Controller
     public function update(LocationRequest $request, $id)
     {
         try {
+            $lang = app()->getLocale();
             $location = $this->locationService->updateLocation($request, $id);
-            return $this->successResponse('Location updated successfully', $location);
+            return $this->successResponse(trans('Location updated successfully'), $location);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }
@@ -55,8 +58,9 @@ class LocationController extends Controller
     public function destroy($id)
     {
         try {
+            $lang = app()->getLocale();
             $this->locationService->deleteLocation($id);
-            return $this->successResponse('Location deleted successfully', null);
+            return $this->successResponse(trans('Location deleted successfully'), null);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }
@@ -65,8 +69,9 @@ class LocationController extends Controller
     public function show($id)
     {
         try {
+            $lang = app()->getLocale();
             $location = $this->locationService->getLocation($id);
-            return $this->successResponse('Location retrieved successfully', $location);
+            return $this->successResponse(trans('Location retrieved successfully'), $location);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 404);
         }
@@ -75,8 +80,9 @@ class LocationController extends Controller
     public function index()
     {
         try {
+            $lang = app()->getLocale();
             $locations = $this->locationService->getAllLocations();
-            return $this->successResponse('All locations retrieved successfully', $locations);
+            return $this->successResponse(trans('All locations retrieved successfully'), $locations);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage(), 400);
         }

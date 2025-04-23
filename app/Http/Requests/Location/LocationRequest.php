@@ -31,7 +31,8 @@ class LocationRequest extends FormRequest
             'host_id' => '',
             'cost' => 'required|numeric|min:0',
 
-            'agent_id' => 'integer',
+            'agent_ids' => 'nullable|array',
+            'agent_ids.*' => 'integer|exists:users,id',
 
              'number_of_slots' => [''],
         ];

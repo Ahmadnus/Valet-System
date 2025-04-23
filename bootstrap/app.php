@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CheakUser;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,9 +17,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'platform_manager' => \App\Http\Middleware\PlatformManagerMiddleware::class,
+            'check.role' => \App\Http\Middleware\CheckUserRole::class,
         ]);
     })
 
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->withSchedule(function(Schedule $schedule){
+$schedule->command('parking:cancel-expired')->everySecond();
+$schedule->command('fee-waivers:auto-reject')->everySecond();
+
+    })
+    ->create();

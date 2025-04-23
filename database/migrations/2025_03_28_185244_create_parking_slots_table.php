@@ -17,7 +17,7 @@ return new class extends Migration
 
             $table->string('slot_number');
 
-            $table->enum('status', ['available', 'occupied', 'reserved'])->default('available');
+            $table->enum('status', ['available', 'occupied', 'bringing_car'])->default('available');
             $table->timestamps();
         });
     }

@@ -10,7 +10,12 @@ class Car extends Model implements HasMedia
 {
     use HasFactory,InteractsWithMedia;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'plate_number',
+        'cartypeable_type',
+        'cartypeable_id'
+    ];
 
     public function user()
     {
@@ -18,6 +23,7 @@ class Car extends Model implements HasMedia
     }
     public function cartypeable()
     {
+
         return $this->morphTo();
     }
 

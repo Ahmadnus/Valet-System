@@ -27,17 +27,36 @@ class AuthService
         try {
             DB::beginTransaction();
 
-            $client = Customer::create([
+            $existingUser = User::where('phone_number', $data['phone_number'])->first();
 
-            ]);
+            if ($existingUser && $existingUser->hasRole('valet_guest')) {
 
-            $userData = Arr::only($data, ['name', 'password', 'phone_number']);
-            $user = $client->user()->create($userData);
+                $existingUser->update([
+                    'name' => $data['name'],
+                    'password' => bcrypt($data['password']),
+                ]);
 
-            $role = Role::firstOrCreate(['name' => 'valet_customer']);
-            $user->assignRole($role);
 
-            // OTP
+                $existingUser->removeRole('valet_guest');
+                $role = Role::firstOrCreate(['name' => 'valet_customer']);
+                $existingUser->assignRole($role);
+
+                $user = $existingUser;
+
+            } else {
+
+                $client = Customer::create([]);
+
+                $userData = Arr::only($data, ['name', 'password', 'phone_number']);
+                $userData['password'] = bcrypt($userData['password']);
+
+                $user = $client->user()->create($userData);
+
+                $role = Role::firstOrCreate(['name' => 'valet_customer']);
+                $user->assignRole($role);
+            }
+
+
             $otp = mt_rand(10000, 99999);
             Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
             TelegramGateway::sendVerificationMessage($user->phone_number, [
@@ -55,6 +74,7 @@ class AuthService
             return [
                 'user' => $user,
             ];
+
         } catch (Exception $e) {
             DB::rollBack();
             throw new Exception($e->getMessage());
@@ -114,7 +134,7 @@ class AuthService
             }
             return ([
                 'message' => 'OTP verified successfully!',
-
+                'token' => $token,
                 'user' => new UserResource($user),
             ]);
 

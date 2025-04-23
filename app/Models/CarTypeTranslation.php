@@ -11,7 +11,7 @@ class CarTypeTranslation extends Model
 
 
     // Add this line to fix the table name
-    protected $table = 'cartype_translations';
+    public $table = 'cartype_translations';
     public $timestamps = false;
     public $fillable = ['type'];
 

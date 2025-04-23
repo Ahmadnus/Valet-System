@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('rater_role');
             $table->string('ratee_role');
             $table->integer('rating');
-
+            $table->string('comment');
             $table->timestamps();
         });
     }

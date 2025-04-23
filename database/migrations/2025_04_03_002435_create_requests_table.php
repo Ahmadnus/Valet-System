@@ -19,8 +19,8 @@ return new class extends Migration
             $table->foreignId('car_id')->constrained('cars')->onDelete('cascade');
             $table->foreignId('parking_slot_id')->constrained('parking_slots')->onDelete('cascade');
             $table->foreignId('location_id')->nullable()->constrained('locations')->onDelete('set null');
-            $table->enum('status', ['pending', 'accepted', 'in_progress', 'preparing', 'completed', 'canceled'])->default('pending');
-            $table->boolean('fee_waived')->default(false); // <-- FIXED HERE
+            $table->enum('status', ['pending', 'accepted', 'in_progress','delivering', 'preparing', 'completed', 'canceled'])->default('pending');
+            $table->boolean('fee_waived')->default(false);
             $table->foreignId('valet_agent_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->decimal('total_hours', 5, 2)->nullable();
             $table->timestamp('in_progress_time')->nullable();

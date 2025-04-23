@@ -46,7 +46,7 @@ class LocationService
     {
         DB::beginTransaction();
 
-        // Check if location name already exists
+
         if (Location::where('host_id', $request->host_id)->exists()) {
             Log::warning("Attempted to create duplicate location: {$request->name}");
             throw new \Exception("Location with this name already exists.");
@@ -70,7 +70,7 @@ $location=Location::create($locationAt);
             for ($i = 1; $i <= $request->number_of_slots; $i++) {
                 $slotNumber = "SLOT-$i";
 
-                // Check if slot number already exists for this location
+
                 if (ParkingSlot::where('location_id', $location->id)->where('slot_number', $slotNumber)->exists()) {
                     Log::error("Duplicate slot detected: $slotNumber for location {$location->id}");
                     throw new \Exception("Slot number $slotNumber already exists for this location.");

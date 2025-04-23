@@ -1,0 +1,34 @@
+{
+    "Cars retrieved successfully": "تم استرجاع السيارات بنجاح",
+    "Car added successfully": "تمت إضافة السيارة بنجاح",
+    "Car fetched successfully": "تم جلب بيانات السيارة بنجاح",
+    "Car updated successfully": "تم تحديث السيارة بنجاح",
+    "Car deleted successfully": "تم حذف السيارة بنجاح",
+
+
+    "Parking request created successfully": "تم إنشاء طلب موقف السيارات بنجاح",
+    "Parking request accepted successfully": "تم قبول طلب موقف السيارات بنجاح",
+    "Parking request started successfully": "تم بدء طلب موقف السيارات بنجاح",
+    "Car preparation requested successfully": "تم طلب تحضير السيارة بنجاح",
+    "Car delivery accepted successfully": "تم قبول تسليم السيارة بنجاح",
+    "Valet completed successfully": "تم إتمام خدمة سائق بنجاح",
+    "Parking request cancelled successfully": "تم إلغاء طلب موقف السيارات بنجاح"
+,
+
+"The selected parking slot does not belong to this location.": "مكان موقف السيارات المختار لا ينتمي إلى هذا الموقع.",
+"This parking slot is currently occupied. Please select another slot.": "مكان موقف السيارات هذا مشغول حالياً. يرجى اختيار مكان آخر.",
+"Sorry, there are no available agents at this location.": "عذراً، لا توجد وكلاء متاحين في هذا الموقع.",
+"You cannot accept the request because you are not available at the moment.": "لا يمكنك قبول الطلب لأنك غير متاح حالياً.",
+"Request not found or not in accepted state.": "الطلب غير موجود أو ليس في حالة مقبولة.",
+"You are not allowed to prepare this request.": "غير مسموح لك بتحضير هذا الطلب.",
+
+"This request is already being prepared or has been completed.": "هذا الطلب يتم تحضيره بالفعل أو تم إتمامه.",
+"You are not allowed to accept this delivery request.": "غير مسموح لك بقبول طلب تسليم هذا.",
+"The request cannot be found or is not in pending state.": "لا يمكن العثور على الطلب أو ليس في حالة انتظار.",
+"You can only request parking for a car you own.": "يمكنك فقط طلب موقف لسيارة تملكها.",
+"You cannot submit a new request for the same car before completing the previous one.": "لا يمكنك تقديم طلب جديد لنفس السيارة قبل إتمام الطلب السابق.",
+"Request not found or already processed.": "الطلب غير موجود أو تم معالجته بالفعل.",
+"Unauthorized. Only valet agents can accept requests.": "غير مصرح. فقط وكلاء الخدمة يمكنهم قبول الطلبات.",
+"This parking slot is currently occupied.":"هذا الموقف محجوز",
+"Fee waiver request sent.":"تم ارسال طلب اعفاء من الرسوم  "
+}

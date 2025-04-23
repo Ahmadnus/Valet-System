@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class LocationAgent extends Model
 {
     use HasFactory;
-    protected $guarded = [];
+    protected $table = 'location_agent';
+        protected $guarded = [];
 
 
 }

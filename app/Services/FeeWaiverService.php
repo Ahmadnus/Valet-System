@@ -12,6 +12,8 @@ use App\NotificationType;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use App\Models\Notification;
+use App\Models\ValetTime;
+
 class FeeWaiverService
 {
     protected NotificationService $notificationService;
@@ -27,16 +29,25 @@ class FeeWaiverService
     {
         $user = Auth::user();
 
-        // Ensure the request is still in 'preparing' state
+        // 1. Ensure the request is still in 'preparing' state
         $this->checkRequestStatusInPreparing($requestId);
+        $request = UserRequest::find($requestId);
 
-        // Check if a fee waiver request already exists for this user and request
-        $existingRequest = userRequest::where('user_id', $user->id)
+        if (!$request) {
+            throw new \Exception(trans("Request not found."));
+        }
 
+        if ($request->user_id !== $user->id) {
+            throw new \Exception(trans("You are not authorized to request a fee waiver for this request."));
+        }
+
+        $existingRequest = FeeWaiverRequest::where('user_id', $user->id)
+            ->where('request_id', $requestId)
             ->first();
 
         if ($existingRequest) {
-
+            throw new \Exception(trans("You have already requested a fee waiver for this request."));
+        }
 
 
         $feeWaiver = FeeWaiverRequest::create([
@@ -44,6 +55,7 @@ class FeeWaiverService
             'request_id' => $requestId,
             'status' => 'pending',
         ]);
+
 
         Log::info("User {$user->id} requested fee waiver for request {$requestId}.");
 
@@ -60,7 +72,8 @@ class FeeWaiverService
             type: NotificationType::ASK_FOR_WAIVE
         );
 
-        return $feeWaiver;}}
+        return $feeWaiver;
+    }
 
 
 
@@ -79,8 +92,22 @@ public function handleFeeWaiver(FeeWaiverRequest $feeWaiver, string $action): Fe
     ]);
 
     if ($status === 'approved') {
-        $userRequest = UserRequest::findOrFail($feeWaiver->request_id);
+
+        $userRequest = UserRequest::with('payment')->findOrFail($feeWaiver->request_id);
         $userRequest->update(['fee_waived' => true]);
+
+        $valetTime = ValetTime::where('user_id',$userRequest ->user_id )->first();
+        $valetTime->update(['price' => 0]);
+
+            $userRequest->payment()->create([
+
+                'amount' =>     0,
+                'payment_method' => 'FREE',
+                'status'=>'completed'
+
+            ]);
+
+
     }
 
     Log::info("Fee waiver {$feeWaiver->id} {$status} by user " . Auth::id());

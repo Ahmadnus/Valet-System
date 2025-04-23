@@ -6,9 +6,10 @@ use App\Http\Requests\StoreCarRequest;
 use App\Models\Car;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UpdateCarRequest;
-
+use App\app\Traits\OwnershipChecker;
 class CarService
 {
+    use OwnershipChecker;
     /**
      * Create a new class instance.
      */
@@ -28,19 +29,16 @@ class CarService
         return $car;
     }
     public function delete(Car $car)
-{
-    if ($car->user_id !== Auth::id()) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
+    {
+        $this->ensureUserOwnsModel($car);
 
-    $car->clearMediaCollection('image');
-    $car->delete();
-}
+        $car->delete();
+
+
+    }
     public function update(UpdateCarRequest $request, Car $car)
 {
-    if ($car->user_id !== Auth::id()) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
+    $this->ensureUserOwnsModel($car);
 
     $car->update($request->validated());
 
@@ -51,19 +49,19 @@ class CarService
 
     return $car;
 }
-    public function index()
-    {
-        return Car::where('user_id', Auth::id())->get();
-    }
+public function getUserCars()
+{
+    $cars = Auth::user()->cars;
+    $cars->load('cartypeable');
 
+    return $cars;
+}
     /**
      * Show a specific car (only if belongs to current user).
      */
     public function show(Car $car)
     {
-        if ($car->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
-        }
+        $this->ensureUserOwnsModel($car);
 
         $car->image_url = $car->getFirstMediaUrl('car_images');
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class LoyaltyPoint extends Model
 {
@@ -20,4 +21,8 @@ class LoyaltyPoint extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function scopeForUser($query, $userId = null)
+{
+    return $query->where('user_id', $userId ?? Auth::id());
+}
 }

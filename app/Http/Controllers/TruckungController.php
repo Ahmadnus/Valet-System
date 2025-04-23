@@ -33,6 +33,7 @@ class TruckungController extends Controller
     public function updateLocation(TruckingRequest $request)
     {
         try {
+            $lang = app()->getLocale();
             $this->trackingService->updateLocation($request->validated());
             return $this->successResponse('Location updated');
         }
@@ -47,11 +48,12 @@ class TruckungController extends Controller
 
     public function getLocation($agentId)
     {
+        $lang = app()->getLocale();
         try {
             $location = $this->trackingService->getLocation($agentId);
-            return $this->successResponse('Location found', new AgentLocationResource($location));
+            return $this->successResponse(trans('Location found'), new AgentLocationResource($location));
         } catch (Exception $e) {
-            return $this->errorResponse('Location not found', 404);
+            return $this->errorResponse(trans('Location not found'), 404);
         }
     }
 

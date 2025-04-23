@@ -3,6 +3,8 @@
 namespace App\Http\Resources\Request;
 
 use App\Http\Resources\Car\CarResource;
+use App\Http\Resources\location\LocationResource;
+use App\Http\Resources\ParkingSlotResource;
 use App\Http\Resources\UserResource;
 use App\Models\Location;
 use Illuminate\Http\Request;
@@ -15,16 +17,13 @@ class RequestResource extends JsonResource
         return [
             'id' => $this->id,
 
-
-
-            'user' => $this->user ? $this->user->toArray() : null,
-            'car' => $this->car ? $this->car->toArray() : null,
-            'location' => $this->location ,
+            'user' => $this->whenLoaded('user', new UserResource($this->user)),
+            'car' => $this->whenLoaded('car',  new CarResource($this->car)),
+            'location' => $this->whenLoaded('location', new LocationResource($this->location)),
             'status' => $this->status,
-            'valet_agent' => $this->valetAgent ? $this->valetAgent->toArray() : null,
-            'parking_slot' => $this->parkingSlot ? $this->parkingSlot->toArray() : null,
-            'in_progress_time' => $this->in_progress_time ?? null,
-            'completed_time' => $this->completed_time ?? null,
+            'parking_slot' => $this->whenLoaded('parkingSlot',  new ParkingSlotResource($this->parkingSlot)),
+            'in_progress_time' => $this->in_progress_time,
+            'completed_time' => $this->completed_time,
         ];
     }
 }

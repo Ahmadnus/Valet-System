@@ -40,7 +40,7 @@ class ManagerService
 
             $user = User::create([
                 'name' => $validated['name'],
-                'email' => $validated['email'],
+
                 'phone_number' => $validated['phone_number'],
                 'password' => Hash::make($validated['password']),
                 'userable_id' => $userable->id,
@@ -76,7 +76,7 @@ class ManagerService
 
             $user->update([
                 'name' => $validated['name'] ?? $user->name,
-                'email' => $validated['email'] ?? $user->email,
+
                 'phone_number' => $validated['phone_number'] ?? $user->phone_number,
                 'password' => isset($validated['password']) ? Hash::make($validated['password']) : $user->password,
             ]);

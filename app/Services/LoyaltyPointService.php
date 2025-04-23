@@ -19,8 +19,7 @@ class LoyaltyPointService
      */
     public function checkLoyaltyPoints()
     {
-        $userId = Auth::id();
-        $loyalty = LoyaltyPoint::where('user_id', $userId)->first();
+        $loyalty = LoyaltyPoint::forUser()->first();
 
         if (!$loyalty) {
             throw new Exception("Loyalty points record not found.");
@@ -32,49 +31,39 @@ class LoyaltyPointService
     /**
      * Use loyalty points for a transaction
      */
-    public function useLoyaltyPoints($points,$requestId)
+    public function useLoyaltyPoints($points, $requestId)
     {
         $user = Auth::user();
         $this->checkRequestStatusInPreparing($requestId);
+
         DB::beginTransaction();
 
-        try {
-            $valetTime = ValetTime::where('user_id', $user->id)->first();
-            $price = $valetTime->price ?? 0;
+        $valetTime = ValetTime::where('user_id', $user->id)->first();
+        $price = $valetTime->price ?? 0;
 
-            $loyalty = LoyaltyPoint::where('user_id', $user->id)->first();
+        $loyalty = LoyaltyPoint::forUser($user->id)->first();
 
-            if (!$loyalty || $loyalty->points < $points) {
-                throw new Exception("Not enough points.");
-            }
-
-
-            $loyalty->points -= $points;
-            $loyalty->save();
-
-
-            $remainingBalance = max(0, $price - ($points / 10));
-
-
-            $invoice = Invoice::create([
-                'user_id' => $user->id,
-                'total_amount' => $price,
-                'points_used' => $points,
-                'remaining_balance' => $remainingBalance,
-            ]);
-
-
-            $valetTime->update(['price' => $remainingBalance]);
-
-            DB::commit();
-
-            return $invoice;
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error("Loyalty Points Error: " . $e->getMessage());
-            throw new Exception($e->getMessage());
+        if (!$loyalty || $loyalty->points < $points) {
+            throw new Exception("Not enough points.");
         }
+
+        $loyalty->points -= $points;
+        $loyalty->save();
+
+        $remainingBalance = max(0, $price - ($points / 10));
+
+        $invoice = Invoice::create([
+            'user_id' => $user->id,
+            'total_amount' => $price,
+            'points_used' => $points,
+            'remaining_balance' => $remainingBalance,
+        ]);
+
+        $valetTime->update(['price' => $remainingBalance]);
+
+        DB::commit();
+
+        return $invoice;
     }
 }
 

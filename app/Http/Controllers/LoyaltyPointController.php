@@ -30,7 +30,7 @@ class LoyaltyPointController extends Controller
         try {
             $points = $this->loyaltyPointService->checkLoyaltyPoints();
 
-            return $this->successResponse('Loyalty points retrieved successfully', ['points' => $points]);
+            return $this->successResponse(trans('Loyalty points retrieved successfully'), ['points' => $points]);
         } catch (Exception $e) {
             Log::error("Check Loyalty Points Error: " . $e->getMessage());
             return $this->errorResponse($e->getMessage(), 400);
@@ -47,7 +47,7 @@ class LoyaltyPointController extends Controller
 
             $invoice = $this->loyaltyPointService->useLoyaltyPoints($points,$request_id);
 
-            return $this->successResponse('Points applied successfully', [
+            return $this->successResponse(trans('Points applied successfully'), [
                 'invoice' => new InvoiceResource($invoice),
             ]);
         } catch (Exception $e) {
