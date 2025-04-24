@@ -19,4 +19,9 @@ class Rating extends Model
     public function ratee() {
         return $this->belongsTo(User::class, 'ratee_id');
     }
+
+    public function request()
+{
+    return $this->belongsTo(\App\Models\Request::class);
+}
 }

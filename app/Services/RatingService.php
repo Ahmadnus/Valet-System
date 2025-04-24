@@ -22,85 +22,68 @@ class RatingService
     }
 
     protected function handleRating(int $rateeId, array $data, string $expectedRaterRole, string $expectedRateeRole): Rating
-    {
-        $rater = Auth::user();
-        $ratee = User::findOrFail($rateeId);
+{
+    $rater = Auth::user();
+    $ratee = User::findOrFail($rateeId);
 
-        $raterRole = $rater->roles->first()->name ?? null;
-        $rateeRole = $ratee->roles->first()->name ?? null;
+    $raterRole = $rater->roles->first()->name ?? null;
+    $rateeRole = $ratee->roles->first()->name ?? null;
 
-        if ($raterRole !== $expectedRaterRole || $rateeRole !== $expectedRateeRole) {
-            throw new Exception("Unauthorized role for rating.");
-        }
-
-  
-        $existingCompletedRequest = \App\Models\Request::where([
-            ['user_id', $rater->id],
-            ['valet_agent_id', $ratee->id],
-            ['status', 'completed']
-        ])
-        ->orWhere([
-            ['user_id', $ratee->id],
-            ['valet_agent_id', $rater->id],
-            ['status', 'completed']
-        ])
-        ->first();
-    if (!$existingCompletedRequest) {
-    throw new \Exception("You can only rate a user after a completed request between you.");
-}
-
-$alreadyRated = \App\Models\Rating::where('rater_id', $rater->id)
-    ->where('ratee_id', $ratee->id)
-    ->exists();
-
-if ($alreadyRated) {
-    throw new \Exception("You have already rated this user.");
-}
-
-        DB::beginTransaction();
-
-        try {
-            $rating = Rating::create([
-                'rater_id'    => $rater->id,
-                'ratee_id'    => $ratee->id,
-                'rater_role'  => $raterRole,
-                'ratee_role'  => $rateeRole,
-                'rating'      => $data['rating'],
-                'comment'     => $data['comment'],
-            ]);
-
-            DB::commit();
-
-            Log::info('Rating created', [
-                'rater_id' => $rater->id,
-                'ratee_id' => $ratee->id,
-            ]);
-
-            return $rating;
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Failed to create rating: ' . $e->getMessage());
-            throw new Exception("Error while creating rating.");
-        }
-
+    if ($raterRole !== $expectedRaterRole || $rateeRole !== $expectedRateeRole) {
+        throw new Exception("Unauthorized role for rating.");
     }
 
-    public function getAllAgentRatings()
-    {
-        return $this->getAllRatingsByRole('valet_agent');
+    $completedRequest = \App\Models\Request::where(function ($query) use ($rater, $ratee) {
+        $query->where('user_id', $rater->id)
+              ->where('valet_agent_id', $ratee->id);
+    })
+    ->orWhere(function ($query) use ($rater, $ratee) {
+        $query->where('user_id', $ratee->id)
+              ->where('valet_agent_id', $rater->id);
+    })
+    ->where('status', 'completed')
+    ->latest()
+    ->first();
+
+    if (!$completedRequest) {
+        throw new \Exception("You can only rate a user after a completed request between you.");
     }
 
-    public function getAllCustomerRatings()
-    {
-        return $this->getAllRatingsByRole('valet_customer');
+    $alreadyRated = \App\Models\Rating::where('rater_id', $rater->id)
+        ->where('ratee_id', $ratee->id)
+        ->where('request_id', $completedRequest->id)
+        ->exists();
+
+    if ($alreadyRated) {
+        throw new \Exception("You have already rated this user for this request.");
     }
 
-    protected function getAllRatingsByRole(string $role)
-    {
-        return Rating::with(['rater', 'ratee'])
-            ->where('ratee_role', $role)
-            ->latest()
-            ->get();
+    DB::beginTransaction();
+
+    try {
+        $rating = Rating::create([
+            'rater_id'    => $rater->id,
+            'ratee_id'    => $ratee->id,
+            'request_id'  => $completedRequest->id,
+            'rater_role'  => $raterRole,
+            'ratee_role'  => $rateeRole,
+            'rating'      => $data['rating'],
+            'comment'     => $data['comment'],
+        ]);
+
+        DB::commit();
+
+        Log::info('Rating created', [
+            'rater_id' => $rater->id,
+            'ratee_id' => $ratee->id,
+            'request_id' => $completedRequest->id,
+        ]);
+
+        return $rating;
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        Log::error('Failed to create rating: ' . $e->getMessage());
+        throw new Exception("Error while creating rating.");
     }
-}
+}}

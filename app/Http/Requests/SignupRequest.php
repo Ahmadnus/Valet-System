@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Requests;
-
+use App\Rules\SyrianPhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SignupRequest extends FormRequest
@@ -22,10 +22,10 @@ class SignupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'=>'required|string|regex:/^[a-zA-Z\s]+$/',
-'fcm_token'=>[],
-            'phone_number' => 'required',
-            "password"=> ["required", "string", "min:8", 'confirmed']
+            'name' => 'required|string|regex:/^[a-zA-Z\s]+$/',
+            'fcm_token' => [],
+            'phone_number' => ['required', new SyrianPhoneNumber],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
 
     }
