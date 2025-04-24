@@ -48,7 +48,7 @@ class TradRequestService
                  ]
              );
 
-             // 🚫 Check if car is already in progress
+
              $inProgressRequest = userRequest::where('car_id', $car->id)
                  ->where('status', userRequest::STATUS_IN_PROGRESS)
                  ->first();
@@ -57,16 +57,16 @@ class TradRequestService
                  throw new \Exception(trans('This car is already in progress.'));
              }
 
-             // 💳 Block if status is preparing or delivering (waiting for payment)
+
              $awaitingPayment = userRequest::where('car_id', $car->id)
-                 ->whereIn('status', ['preparing', 'delivering']) // or use constants
+                 ->whereIn('status', ['preparing', 'delivering'])
                  ->first();
 
              if ($awaitingPayment) {
                  throw new \Exception(trans('This request is waiting for payment. Please complete the payment first.'));
              }
 
-             // 🌀 Continue if only pending/accepted
+
              $existingRequest = userRequest::where('user_id', $user->id)
                  ->where('car_id', $car->id)
                  ->whereIn('status', ['pending', 'accepted'])
@@ -106,7 +106,7 @@ class TradRequestService
          return DB::transaction(function () use ($data, $id) {
              $request = $this->getGuestRequest($id);
 
-             // ❌ Don't allow payment if the request isn't in a valid state
+
              if (in_array($request->status, [
                  userRequest::STATUS_PENDING,
                  userRequest::STATUS_ACCEPTED,
@@ -114,14 +114,14 @@ class TradRequestService
                  throw new \Exception('Cannot create a payment before the parking is in progress.');
              }
 
-             // ❌ Prevent duplicate payment logic if total_hours is already set
+
              if (!is_null($request->total_hours) && $request->total_hours > 0) {
                  throw new \Exception('Payment has already been calculated for this request.');
              }
 
              $this->validatePlateNumber($request, $data['plate_number']);
 
-             // ✅ Safe to calculate duration now
+
              $totalHours = abs($request->in_progress_time
                  ? now()->diffInHours($request->in_progress_time)
                  : 0);
