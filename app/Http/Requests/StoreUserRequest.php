@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Requests;
-
+use App\Rules\SyrianPhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
@@ -27,7 +27,7 @@ class StoreUserRequest extends FormRequest
             'name' => 'sometimes|string|max:255',
 
             'password' => 'sometimes|string|min:6',
-            'phone_number' => 'sometimes|string|max:20',
+        'phone_number' => ['required', new SyrianPhoneNumber],
             'role' => 'sometimes|string|exists:roles,name'
         ];
     }

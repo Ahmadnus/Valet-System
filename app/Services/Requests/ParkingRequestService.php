@@ -20,10 +20,11 @@ use App\Services\NotificationService;
 use App\NotificationType;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
+use App\app\Traits\HasRequestValidation;
 
 class ParkingRequestService
 {
-
+    use HasRequestValidation;
     protected NotificationService $notificationService;
 
     public function __construct(NotificationService $notificationService)
@@ -31,41 +32,43 @@ class ParkingRequestService
         $this->notificationService = $notificationService;
     }
 
+
     public function createParkingRequest(array $data)
-{
-    return DB::transaction(function () use ($data) {
-        $userId = Auth::id();
+    {
+        return DB::transaction(function () use ($data) {
+            $userId = Auth::id();
 
-        $this->checkCarOwnership($userId, $data['car_id']);
-        $this->checkExistingRequest($userId, $data['car_id']);
+            $this->checkCarOwnership($userId, $data['car_id']);
+            $this->checkExistingRequest($userId, $data['car_id']);
 
-        $request = Request::create([
-            'user_id' => $userId,
-            'car_id' => $data['car_id'],
-            'location_id' => $data['location_id'],
-            'status' => 'pending',
-            'parking_slot_id' => $data['parking_slot_id'],
-            'customer_latitude' => $data['latitude'],
-            'customer_longitude' => $data['longitude'],
-        ]);
-
-        Log::info("Parking request {$request->id} created by user $userId.");
-
-        $this->notificationService->sendNotification(
-            title: trans('New Parking Request'),
-            body: trans('A new parking request has been created by a customer.'),
-            data: [
-                'request_id' => $request->id,
+            $request = Request::create([
+                'user_id' => $userId,
+                'car_id' => $data['car_id'],
+                'location_id' => $data['location_id'],
                 'status' => 'pending',
-            ],
-            user: null,
-            topic: \App\TopicType::VALET_AGENT,
-            type: NotificationType::REQUEST_PARKING_SERVICE
-        );
+                'parking_slot_id' => $data['parking_slot_id'],
+                'customer_latitude' => $data['latitude'],
+                'customer_longitude' => $data['longitude'],
+            ]);
 
-        return $request;
-    });
-}
+            Log::info("Parking request {$request->id} created by user $userId.");
+
+            $this->notificationService->sendNotification(
+                title: trans('New Parking Request'),
+                body: trans('A new parking request has been created by a customer.'),
+                data: [
+                    'request_id' => $request->id,
+                    'status' => 'pending',
+                ],
+                user: null,
+                topic: \App\TopicType::VALET_AGENT,
+                type: NotificationType::REQUEST_PARKING_SERVICE
+            );
+
+            return $request;
+        });
+    }
+
     public function acceptParkingRequest(int $requestId)
     {
         return DB::transaction(function () use ($requestId) {

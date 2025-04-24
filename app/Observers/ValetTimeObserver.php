@@ -20,13 +20,11 @@ class ValetTimeObserver
      */
     public function updated(UserRequest $request)
     {
-        if ($request->isDirty('status') && $request->status === \App\Models\Request::STATUS_PREPARING) {
+        if ($request->status === \App\Models\Request::STATUS_PREPARING || $request->status === \App\Models\Request::STATUS_IN_PROGRESS
+        && $request->requested_by_user === 1) {
 
             // Safety check for timestamps
-            if (!$request->in_progress_time || !$request->completed_time) {
-                Log::warning("Missing timestamps for valet time calculation - Request ID: {$request->id}");
-                return;
-            }
+
 
             // 🕒 Calculate time difference
             $timeDiff = abs(now()->diffInHours($request->in_progress_time));

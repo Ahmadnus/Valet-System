@@ -8,6 +8,7 @@ use App\Models\Request as userRequest;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
+use App\Rules\SyrianPhoneNumber;
 class TradRequest extends FormRequest
 {
     /**
@@ -26,8 +27,8 @@ class TradRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone_number' => 'required|string',
-            'plate_number' => 'required|string|exists:cars,plate_number',
+        'phone_number' => ['required', new SyrianPhoneNumber],
+            'plate_number' => 'required|string',
             'location_id' => 'required|exists:locations,id',
             'parking_slot_id' => 'required|exists:parking_slots,id',
             'cartypeable_id' => 'required|integer',
@@ -41,39 +42,10 @@ class TradRequest extends FormRequest
 
         $user = User::where('phone_number', $phoneNumber)->first();
 
-        if ($user) {
-            $hasActiveRequest = UserRequest::where('user_id', $user->id)
-                ->whereIn('status', [
-                    UserRequest::STATUS_PENDING,
-                    UserRequest::STATUS_IN_PROGRESS
-                ])
-                ->exists();
 
-            if ($hasActiveRequest) {
-                throw new HttpResponseException(response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed.',
-                    'errors' => [
-                        'phone_number' => ['This guest already has an active parking request.']
-                    ]
-                ], 422));
-            }
-        }
     }
 
-    public function withValidator($validator)
-    {
-        $validator->after(function ($validator) {
-            $plateNumber = $this->input('plate_number');
-            $requestId = $this->route('id');
 
-            $car = Car::where('plate_number', $plateNumber)->first();
-
-            if (!$car) return;
-
-
-        });
-    }
 
     protected function failedValidation(Validator $validator)
     {

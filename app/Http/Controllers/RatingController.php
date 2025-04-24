@@ -24,30 +24,36 @@ class RatingController extends Controller
 
     public function __construct(protected RatingService $ratingService) {}
 
-    public function rateAgent(StoreRatingRequest $request, $agentId)
-    {
-        try {$lang = app()->getLocale();
-            $rating = $this->ratingService->rateAgent($request->validated(), (int) $agentId);
-            return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);
-        } catch (\Exception $e) {
-            Log::error("Rate Agent Error: " . $e->getMessage());
-            return $this->errorResponse($e->getMessage());
-        }
+
+    public function rateAgent(StoreRatingRequest $request, $requestId)
+{
+    try {
+        $lang = app()->getLocale();
+
+        // Validate request_id and get the associated user IDs
+        $rating = $this->ratingService->rateAgentByRequest($request->validated(), (int) $requestId);
+
+        return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);
+    } catch (\Exception $e) {
+        Log::error("Rate Agent Error: " . $e->getMessage());
+        return $this->errorResponse($e->getMessage());
     }
+}
 
-    public function rateCustomer(StoreRatingRequest $request, $customerId)
-    {
-        try {
-            $lang=app()->getlocale();
+public function rateCustomer(StoreRatingRequest $request, $requestId)
+{
+    try {
+        $lang = app()->getLocale();
 
-            $rating = $this->ratingService->rateCustomer($request->validated(), (int) $customerId);
+        // Validate request_id and get the associated user IDs
+        $rating = $this->ratingService->rateCustomerByRequest($request->validated(), (int) $requestId);
 
-            return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);
-        } catch (\Exception $e) {
-            Log::error("Rate Customer Error: " . $e->getMessage());
-            return $this->errorResponse($e->getMessage());
-        }
+        return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);
+    } catch (\Exception $e) {
+        Log::error("Rate Customer Error: " . $e->getMessage());
+        return $this->errorResponse($e->getMessage());
     }
+}
 
 
     public function getAllAgentRatings()
