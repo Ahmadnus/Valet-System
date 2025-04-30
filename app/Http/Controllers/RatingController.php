@@ -30,7 +30,7 @@ class RatingController extends Controller
     try {
         $lang = app()->getLocale();
 
-        // Validate request_id and get the associated user IDs
+
         $rating = $this->ratingService->rateAgentByRequest($request->validated(), (int) $requestId);
 
         return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);
@@ -45,7 +45,7 @@ public function rateCustomer(StoreRatingRequest $request, $requestId)
     try {
         $lang = app()->getLocale();
 
-        // Validate request_id and get the associated user IDs
+
         $rating = $this->ratingService->rateCustomerByRequest($request->validated(), (int) $requestId);
 
         return $this->successResponse(trans('Rating submitted successfully'), new RatingResource($rating), 201);

@@ -130,8 +130,9 @@ class AuthService
 
             ]);
             if(isset($data['fcm_token'])){
-                $this->storFcm($user,$data['fcm_token']);
+                $this->storeFcmToken($user,$data['fcm_token']);
             }
+
             return ([
                 'message' => 'OTP verified successfully!',
                 'token' => $token,
@@ -178,9 +179,9 @@ class AuthService
         $token = $user->createToken("login")->plainTextToken;
         return $token;
     }
-    private function storFcm($user,$token){
+    private function storFcm($user,$tokens){
         $user->fcmTokens()->create([
-            'token'=>$token
+            'tokens'=>$tokens
         ]);
 
     }

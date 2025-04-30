@@ -14,6 +14,9 @@ enum NotificationType: string
     case CLOSE_PARKING_EVENT = 'Noif-7';
     case NEW_VC_RATE = 'Noif-8';
     case CAR_PREPARATION_REQUESTED = 'Noif-9';
+    case ACCEPT_REQUESTED = 'Noif-10';
+    case ACCEPT_PREPARING = 'Noif-11';
+    case CANCEL_REQUEST = 'Noif-12';
 
     public function defaultTitle(): string
     {
@@ -27,6 +30,9 @@ enum NotificationType: string
             self::CLOSE_PARKING_EVENT => 'Parking Event Closed',
             self::NEW_VC_RATE => 'New Agent Rating',
             self::CAR_PREPARATION_REQUESTED => 'New Agent Rating',
+            self::ACCEPT_REQUESTED => 'New Agent Rating',
+            self::ACCEPT_PREPARING => 'New Agent Rating',
+            self::CANCEL_REQUEST => 'New Agent Rating',
         };
     }
 

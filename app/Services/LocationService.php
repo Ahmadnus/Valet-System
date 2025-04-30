@@ -22,18 +22,21 @@ class LocationService
             throw new \Exception('Latitude and longitude are required');
         }
 
-        $locations = Location::selectRaw("
-            id, latitude, longitude,
-            (6371 * acos(
-                cos(radians(?)) * cos(radians(latitude)) *
-                cos(radians(longitude) - radians(?)) +
-                sin(radians(?)) * sin(radians(latitude))
-            )) AS distance",
-            [$userLat, $userLng, $userLat]
-        )
-        ->orderBy("distance", "asc")
-        ->with('parkingSlots')
-        ->get();
+        $maxDistanceKm = 10;
+
+$locations = Location::selectRaw("
+    id, latitude, longitude,
+    (6371 * acos(
+        cos(radians(?)) * cos(radians(latitude)) *
+        cos(radians(longitude) - radians(?)) +
+        sin(radians(?)) * sin(radians(latitude))
+    )) AS distance",
+    [$userLat, $userLng, $userLat]
+)
+->having('distance', '<=', $maxDistanceKm)
+->orderBy('distance', 'asc')
+->with('parkingSlots')
+->get();
 
         if ($locations->isEmpty()) {
             throw new \Exception('No locations found');
@@ -49,7 +52,7 @@ class LocationService
 
         if (Location::where('host_id', $request->host_id)->exists()) {
             Log::warning("Attempted to create duplicate location: {$request->name}");
-            throw new \Exception("Location with this name already exists.");
+            throw new \Exception(trans("Location with this name already exists."));
         }
 
         $locationAt = [

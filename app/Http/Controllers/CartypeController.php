@@ -17,36 +17,42 @@ class CartypeController extends Controller
 
     public function __construct(CarTypeService $carTypeService)
     {
+        $lang = app()->getLocale();
         $this->carTypeService = $carTypeService;
     }
 
     public function index()
     {
+        $lang = app()->getLocale();
         $cartypes = $this->carTypeService->list();
         return $this->successResponse('Car types retrieved successfully', $cartypes);
     }
 
     public function store(CartypeRequest $request)
     {
+        $lang = app()->getLocale();
         $data = $this->carTypeService->create($request->validated(), $request->file('logo'));
-        return $this->successResponse('Car type created successfully!', $data, 201);
+        return $this->successResponse(trans('Car type created successfully!'), $data, 201);
     }
 
     public function show(Cartype $cartype)
     {
+        $lang = app()->getLocale();
         $data = $this->carTypeService->show($cartype);
-        return $this->successResponse('Car type retrieved successfully', $data);
+        return $this->successResponse(trans('Car type retrieved successfully'), $data);
     }
 
     public function update(CartypeRequest $request, Cartype $cartype)
     {
+        $lang = app()->getLocale();
         $data = $this->carTypeService->update($cartype, $request->validated(), $request->file('logo'));
-        return $this->successResponse('Car type updated successfully!', $data);
+        return $this->successResponse(trans('Car type updated successfully!'), $data);
     }
 
     public function destroy(Cartype $cartype)
     {
+        $lang = app()->getLocale();
         $this->carTypeService->delete($cartype);
-        return $this->successResponse('Car type deleted successfully!');
+        return $this->successResponse(trans('Car type deleted successfully!'));
     }
 }

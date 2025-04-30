@@ -4,7 +4,7 @@ use App\Http\Controllers\RatingController;
 use App\Http\Middleware\lang;
 
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum',lang::class])->group(function () {
 
 
 Route::post('/rate-agent/{id}', [RatingController::class, 'rateAgent'])

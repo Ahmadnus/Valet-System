@@ -12,7 +12,9 @@ use App\NotificationType;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use App\Models\Notification;
+use App\Models\User;
 use App\Models\ValetTime;
+use Illuminate\Database\Eloquent\Model;
 
 class FeeWaiverService
 {
@@ -45,9 +47,10 @@ class FeeWaiverService
             ->where('request_id', $requestId)
             ->first();
 
-        if ($existingRequest) {
-            throw new \Exception(trans("You have already requested a fee waiver for this request."));
-        }
+if($existingRequest ){
+    throw new \Exception(trans("You are already send."));
+}
+
 
 
         $feeWaiver = FeeWaiverRequest::create([
@@ -58,20 +61,32 @@ class FeeWaiverService
 
 
         Log::info("User {$user->id} requested fee waiver for request {$requestId}.");
+        $valetHosts = UserRequest::where('id', $requestId)
+        ->with('location')
+        ->first();
+        $host=$valetHosts->location->host_id;
 
 
-        $this->notificationService->sendNotification(
+        $valetHostss = User::role('valet_host')->where('id',$host)->with('fcmTokens')
+        ->first();
+
+$tokens[]=$valetHostss->fcmTokens->pluck('token');
+    if (!empty($tokens)) {
+        $this->notificationService->sendMulticastNotification(
             title: 'Fee Waiver Request',
             body: 'A customer has requested a fee waiver for a parking service.',
+            tokens: $tokens,
             data: [
                 'request_id' => $requestId,
                 'status' => 'pending',
             ],
-            user: null,
-            topic: \App\TopicType::VALET_HOST,
             type: NotificationType::ASK_FOR_WAIVE
         );
 
+        Log::info("Sent fee waiver request notification for request ID {$requestId} to valet hosts.", [
+            'tokens' => $tokens,
+        ]);
+    }
         return $feeWaiver;
     }
 
@@ -112,7 +127,7 @@ public function handleFeeWaiver(FeeWaiverRequest $feeWaiver, string $action): Fe
 
     Log::info("Fee waiver {$feeWaiver->id} {$status} by user " . Auth::id());
 
-    // Notify the customer
+
     $this->notificationService->sendNotification(
         title: 'Fee Waiver ' ,
         body: "Your fee waiver request has been {$status}.",

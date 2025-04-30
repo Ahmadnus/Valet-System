@@ -45,7 +45,7 @@ public function handleFeeWaiver(HandleFeeWaiverRequest $request, $id)
         $updated = $this->feeWaiverService->handleFeeWaiver($feeWaiver, $request->validated()['action']);
 
         return $this->successResponse(
-            "Fee waiver request {$updated->status} successfully.",
+            " {$updated->status}",
             new FeeWaiverResource($updated)
         );
     } catch (\Exception $e) {

@@ -49,6 +49,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'phone_number' => 'required|exists:users,phone_number',
             'password' => ['required'],
+            'fcm_token'=>[]
 
         ]);
 

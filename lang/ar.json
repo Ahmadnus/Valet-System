@@ -30,5 +30,11 @@
 "Request not found or already processed.": "الطلب غير موجود أو تم معالجته بالفعل.",
 "Unauthorized. Only valet agents can accept requests.": "غير مصرح. فقط وكلاء الخدمة يمكنهم قبول الطلبات.",
 "This parking slot is currently occupied.":"هذا الموقف محجوز",
-"Fee waiver request sent.":"تم ارسال طلب اعفاء من الرسوم  "
+"Fee waiver request sent.":"تم ارسال طلب اعفاء من الرسوم  ",
+"Car type created successfully!":"تم انشاء نوع سيارة",
+"You are already send.":"لقد ارسلت بالفعل",
+"You have already rated this user for this request.":"لقد قييمت بالفعل"
+
+
+
 }

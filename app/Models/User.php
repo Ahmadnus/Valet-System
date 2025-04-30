@@ -90,7 +90,7 @@ public function fcmTokens()
 
 public function hasCar($carId)
 {
-    dd();
+
     // Check if the user owns the car
     return $this->cars()->where('id', $carId)->exists();
 }
