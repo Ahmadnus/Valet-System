@@ -21,11 +21,18 @@ use App\NotificationType;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use App\app\Traits\HasRequestValidation;
+use App\Events\CarPreparationRequested;
+use App\Events\DeliveryRequestAccepted;
+use App\Events\ParkingRequestAccepted;
+use App\Events\ParkingRequestCanceled;
+use App\Events\ParkingRequestCreated;
 use App\Models\Location;
+use App\Traits\app\Traits\CheckDistanceTrait;
 use Spatie\Permission\Models\Role;
 
 class ParkingRequestService
 {
+    use CheckDistanceTrait;
     use HasRequestValidation;
     protected NotificationService $notificationService;
 
@@ -35,15 +42,24 @@ class ParkingRequestService
     }
 
 
+
+
     public function createParkingRequest(array $data)
     {
         return DB::transaction(function () use ($data) {
 
             $userId = Auth::id();
 
-
             $this->checkCarOwnership($userId, $data['car_id']);
             $this->checkExistingRequest($userId, $data['car_id']);
+
+            $userLat = $data['latitude'];
+            $userLng = $data['longitude'];
+
+
+            if (!$this->isUserWithinDistance($userLat, $userLng)) {
+                throw new \Exception(trans('You are too far from the nearest location. Please choose a closer location.'));
+            }
 
 
             $request = Request::create([
@@ -58,47 +74,7 @@ class ParkingRequestService
 
             Log::info("Parking request {$request->id} created by user $userId.");
 
-
-            $location = Location::find($data['location_id']);
-
-            if ($location) {
-
-                $agents = $location->agents()
-                    ->where('status', 'available')
-                    ->whereHas('fcmTokens')
-                    ->get();
-
-
-                $notifiedAgents = $agents->filter(function ($agent) {
-                    return $agent->getRoleNames()->contains('valet_agent');
-                });
-
-                $tokens = $notifiedAgents->flatMap(function ($agent) {
-                    return $agent->fcmTokens->pluck('token');
-                })->toArray();
-
-
-                if ($notifiedAgents->isNotEmpty()) {
-                    Log::info('Valet agents notified for request ID ' . $request->id, [
-                        'agents' => $notifiedAgents->pluck('id', 'name')->toArray(),
-                        'tokens' => $tokens,
-                    ]);
-                }
-
-
-                if (!empty($tokens)) {
-                    $this->notificationService->sendMulticastNotification(
-                        title: trans('New Parking Request'),
-                        body: trans('A new parking request has been created by a customer.'),
-                        tokens: $tokens,
-                        data: [
-                            'request_id' => $request->id,
-                            'status' => 'pending',
-                        ],
-                        type: NotificationType::REQUEST_PARKING_SERVICE
-                    );
-                }
-            }
+            event(new ParkingRequestCreated($request));
 
             return $request;
         });
@@ -135,26 +111,9 @@ class ParkingRequestService
         Log::info("Parking request $requestId accepted by valet agent $valetAgentId.");
 
 
-        $customer = $parkingRequest->user;
 
-        $tokens = $customer->fcmTokens->pluck('token')->toArray();
 
-        if (!empty($tokens)) {
-            $this->notificationService->sendMulticastNotification(
-                title: trans('Request Accepted'),
-                body: trans('Your parking request has been accepted by a valet agent.'),
-                tokens: $tokens,
-                data: [
-                    'request_id' => $parkingRequest->id,
-                    'status' => Request::STATUS_ACCEPTED,
-                ],
-                type: NotificationType::ACCEPT_REQUESTED
-            );
-
-            Log::info("Sent acceptance notification for request ID {$requestId} to user ID {$customer->id}.", [
-                'tokens' => $tokens,
-            ]);
-        }
+        event(new ParkingRequestAccepted($parkingRequest));
 
         return $parkingRequest;
     });
@@ -187,57 +146,38 @@ class ParkingRequestService
         });
     }
     public function requestCarPreparation(int $requestId, float $latitude, float $longitude)
-{
-    return DB::transaction(function () use ($requestId, $latitude, $longitude) {
-        $userId = Auth::id();
+    {
+        return DB::transaction(function () use ($requestId, $latitude, $longitude) {
+            $userId = Auth::id();
 
-        $parkingRequest = $this->getParkingRequest($requestId, Request::STATUS_IN_PROGRESS);
+            $parkingRequest = $this->getParkingRequest($requestId, Request::STATUS_IN_PROGRESS);
 
-        if ($parkingRequest->user_id !== $userId) {
-            Log::warning("User  tried to prepare a request they don't own.");
-            throw new \Exception(trans("You are not allowed to prepare this request."));
-        }
+            if ($parkingRequest->user_id !== $userId) {
+                Log::warning("User $userId tried to prepare a request they don't own.");
+                throw new \Exception(trans("You are not allowed to prepare this request."));
+            }
 
-        $parkingRequest->update([
-            'status' => Request::STATUS_PREPARING,
-            'completed_time' => now(),
-            'customer_latitude' => $latitude,
-            'customer_longitude' => $longitude,
-        ]);
+            if (!$this->isUserWithinDistance($latitude, $longitude)) {
+                throw new \Exception(trans('You are too far from the nearest location. Please get closer.'));
+            }
 
-        $location = Location::find($parkingRequest->location_id);
-        $agents = $location->agents()
-            ->where('status', 'available')
-            ->whereHas('fcmTokens')
-            ->get();
 
-        $tokens = $agents->filter(fn($agent) => $agent->getRoleNames()->contains('valet_agent'))
-            ->flatMap(fn($agent) => $agent->fcmTokens->pluck('token'))
-            ->toArray();
 
-        if (!empty($tokens)) {
-            $this->notificationService->sendMulticastNotification(
-                title: 'Car Preparation Requested',
-                body: 'A customer has requested their car to be prepared.',
-                tokens: $tokens,
-                data: [
-                    'request_id' => $parkingRequest->id,
-                    'status' => Request::STATUS_PREPARING,
-                    'customer_latitude' => $latitude,
-                    'customer_longitude' => $longitude,
-                ],
-                type: NotificationType::CAR_PREPARATION_REQUESTED
-            );
-
-            Log::info("Car preparation notification sent to available agents in location ID {$location->id}.", [
-                'tokens' => $tokens,
+            $parkingRequest->update([
+                'status' => Request::STATUS_PREPARING,
+                'completed_time' => now(),
+                'customer_latitude' => $latitude,
+                'customer_longitude' => $longitude,
             ]);
-        }
-        Log::info("User $userId requested car preparation for request $requestId.");
 
-        return $parkingRequest;
-    });
-}
+            Log::info("User $userId requested car preparation for request $requestId.");
+
+            event(new CarPreparationRequested($parkingRequest, $latitude, $longitude));
+
+            return $parkingRequest;
+        });
+    }
+
 
     public function requestCompleted(int $requestId)
 {
@@ -289,26 +229,9 @@ public function acceptDeliveryRequest(int $requestId)
             ->where('location_id', $request->location_id)
             ->update(['status' => 'in_way']);
 
-          $customer = $request->user;
+            Log::info("Agent $agentId accepted delivery for request $requestId.");
+            event(new DeliveryRequestAccepted($request));
 
-          $tokens = $customer->fcmTokens->pluck('token')->toArray();
-
-          if (!empty($tokens)) {
-              $this->notificationService->sendMulticastNotification(
-                  title: trans('Request Accepted'),
-                  body: trans('Your parking request has been accepted by a valet agent.'),
-                  tokens: $tokens,
-                  data: [
-                      'request_id' => $request->id,
-                      'status' => Request::STATUS_ACCEPTED,
-                  ],
-                  type: NotificationType::ACCEPT_PREPARING
-              );
-
-              Log::info("Sent acceptance notification for request ID {$requestId} to user ID {$customer->id}.", [
-                  'tokens' => $tokens,
-              ]);
-          }
         return $request;
     });
 }
@@ -374,31 +297,10 @@ public function completeValet(int $id, $plateNumber)
                 'rejection_reason' => $reason,
             ]);
 
-            $customer = $parkingRequest->user;
 
-            $tokens = $customer->fcmTokens->pluck('token')->toArray();
-
-            if (!empty($tokens)) {
-                $this->notificationService->sendMulticastNotification(
-                    title: trans('Request Canceled'),
-                    body: trans('Your parking request has been canceled by the valet agent.'),
-                    tokens: $tokens,
-                    data: [
-                        'request_id' => $parkingRequest->id,
-                        'status' => Request::STATUS_CANCELED,
-                        'reason' => $reason,
-                    ],
-                    type: NotificationType::CANCEL_REQUEST
-                );
-
-                Log::info("Sent cancellation notification for request ID {$requestId} to user ID {$customer->id}.", [
-                    'tokens' => $tokens,
-                    'reason' => $reason,
-                ]);
-            }
+            event(new ParkingRequestCanceled($parkingRequest, $reason));
 
             Log::info("Parking request $requestId has been canceled by user $userId. Reason: $reason.");
-
             return $parkingRequest;
         });
     }

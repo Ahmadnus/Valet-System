@@ -15,6 +15,7 @@ class CarService
      */
     public function store(array $data)
     {
+
         $car = Car::create([
             'user_id' => Auth::id(),
             'cartypeable_id' => $data['cartypeable_id'],

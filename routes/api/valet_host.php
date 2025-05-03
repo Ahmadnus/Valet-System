@@ -7,10 +7,10 @@ use App\Http\Middleware\lang;
 
 
 Route::prefix('host')
-    ->middleware(['auth:sanctum', Lang::class]) // أضفنا lang هنا
+    ->middleware(['auth:sanctum', Lang::class])
     ->group(function () {
         Route::post('/fee-waiver/{id}', [FeeWaiverController::class, 'handleFeeWaiver']);
         Route::get('/agents', [HostController::class, 'indexAgents'])->name('agents.index');
 
-        // يمكنك إضافة المزيد من المسارات الخاصة بالـ host هنا...
+
     });

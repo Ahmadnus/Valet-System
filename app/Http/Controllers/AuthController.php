@@ -73,10 +73,12 @@ class AuthController extends Controller
     return $this->authService->verifyLogOtp($data['phone_number'], $data['otp']);
 }
 
-    public function logout(Request $request)
-    {
-        $this->authService->logout();
-        return response([]);
-    }
+public function logout(Request $request)
+{
+    // Call the logout method in AuthService and pass the Request
+    $response = $this->authService->logout($request);
 
+    // Return the response (success message)
+    return response()->json($response);
+}
 }

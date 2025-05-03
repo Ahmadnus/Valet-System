@@ -10,7 +10,7 @@ trait ApiResponse
             'success' => true,
             'message' => $message,
             'data' => $data,
-            'status' => $status,
+            'code' => $status,
         ], $status);
     }
 
@@ -20,7 +20,7 @@ trait ApiResponse
             'success' => false,
             'message' => $message,
             'data' => null,
-            'status' => $status,
+            'code' => $status,
         ], $status);
     }
 }

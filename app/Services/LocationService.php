@@ -87,39 +87,61 @@ $location=Location::create($locationAt);
             }
         }
 
-        if ($request->has('agent_ids') && is_array($request->agent_ids)) {
-            $location->agents()->attach($request->agent_ids);
+
+      if ($request->has('agent_ids') && is_array($request->agent_ids)) {
+        $alreadyAssignedAgents = DB::table('location_agent')
+            ->whereIn('agent_id', $request->agent_ids)
+            ->pluck('agent_id')
+            ->toArray();
+
+        if (!empty($alreadyAssignedAgents)) {
+            $agentIdsStr = implode(', ', $alreadyAssignedAgents);
+            throw new \Exception("Some agents are already assigned to other locations: {$agentIdsStr}");
         }
 
-        DB::commit();
-
-        return $location->load('parkingSlots', 'agents');
+        $location->agents()->attach($request->agent_ids);
     }
 
+    DB::commit();
+
+    return $location->load('parkingSlots', 'agents');
+}
+
+public function updateLocation(LocationRequest $request, $id)
+{
+    DB::beginTransaction();
+
+    $location = Location::findOrFail($id);
 
 
-        public function updateLocation(LocationRequest $request, $id)
-        {
-            DB::beginTransaction();
+    $conflictingAgents = DB::table('location_agent')
+        ->whereIn('agent_id', $request->agent_ids)
+        ->where('location_id', '!=', $location->id)
+        ->pluck('agent_id')
+        ->toArray();
 
-            $location = Location::findOrFail($id);
+    if (!empty($conflictingAgents)) {
+        $ids = implode(', ', $conflictingAgents);
+        throw new \Exception("The following agents are already assigned to other locations: $ids");
+    }
 
-            $location->update([
-                'name' => $request->name,
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
-                'host_id' => $request->host_id,
-                'cost' => $request->cost,
-            ]);
+    $location->update([
+        'latitude' => $request->latitude,
+        'longitude' => $request->longitude,
+        'host_id' => $request->host_id,
+        'cost' => $request->cost,
+        'ar' => ['name' => $request->name['ar'] ?? ''],
+        'en' => ['name' => $request->name['en'] ?? ''],
+    ]);
 
-            Log::info("Location updated: {$location->id}");
+    Log::info("Location updated: {$location->id}");
 
-            $location->agents()->sync($request->agent_ids);
+    $location->agents()->sync($request->agent_ids);
 
-            DB::commit();
+    DB::commit();
 
-            return $location;
-        }
+    return $location->load('agents');
+}
 
         public function deleteLocation($id)
         {

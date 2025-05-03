@@ -8,9 +8,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use App\NotificationType;
 
 class RatingService
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function rateAgentByRequest(array $data, int $requestId): Rating
 {
     return $this->handleRatingByRequest($requestId, $data, 'valet_customer', 'valet_agent');
@@ -77,7 +85,26 @@ protected function handleRatingByRequest(int $requestId, array $data, string $ex
             'comment'     => $data['comment'],
             'request_id'  => $requestId,
         ]);
+        $tokens = $ratee->fcmTokens()->pluck('token')->toArray();
 
+
+        if (!empty($tokens)) {
+            $this->notificationService->sendMulticastNotification(
+                title: trans('New Rating Received'),
+                body: trans('You have received a new rating from a :role.', ['role' => $raterRole]),
+                tokens: $tokens,
+                data: [
+                    'request_id' => $requestId,
+                    'rating' => $data['rating'],
+                ],
+                type: NotificationType::NEW_VP_RATE
+            );
+            Log::info("Sent rating notification to user ID {$ratee->id}", [
+                'tokens' => $tokens,
+            ]);
+        } else {
+            Log::warning("User ID {$ratee->id} has no FCM tokens for rating notification.");
+        }
         DB::commit();
 
         Log::info('Rating created', [

@@ -10,13 +10,22 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\RatingController;
 use App\Http\Middleware\lang;
 Route::middleware(['auth:sanctum', 'check.role:valet_provider',lang::class])->group(function () {
-    Route::get('/cartypes', [CartypeController::class, 'index']);
-    Route::post('/cartypes', [CartypeController::class, 'store']);
-    Route::get('/cartypes/{cartype}', [CartypeController::class, 'show']);
-    Route::put('/cartypes/{cartype}', [CartypeController::class, 'update']);
-    Route::delete('/cartypes/{cartype}', [CartypeController::class, 'destroy']);
+
+
+
+Route::get('cartypes', [CartypeController::class, 'index']);
+
+Route::post('cartypes', [CartypeController::class, 'store']);
+
+Route::get('cartypes/{cartype}', [CartypeController::class, 'show']);
+
+
+Route::put('cartypes/{cartype}', [CartypeController::class, 'update']);
+
+
+Route::delete('cartypes/{cartype}', [CartypeController::class, 'destroy']);
     });
-    Route::middleware(['auth:sanctum', 'check.role:valet_provider'])->group(function () {
+    Route::middleware(['auth:sanctum', 'check.role:valet_provider',lang::class])->group(function () {
         Route::get('/role-counts', [ManagerController::class, 'getUserCountsByRole']);
         Route::get('/users', [ManagerController::class, 'index']);
         Route::get('/users/{id}', [ManagerController::class, 'show']);

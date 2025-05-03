@@ -21,18 +21,18 @@ enum NotificationType: string
     public function defaultTitle(): string
     {
         return match($this) {
-            self::REQUEST_PARKING_SERVICE => 'New Parking Request',
-            self::REQUEST_CAR => 'Car Retrieval Request',
-            self::NEW_VP_RATE => 'New Customer Rating',
-            self::NEW_PAYMENT => 'New Payment Made',
-            self::ASK_FOR_WAIVE => 'Fee Waive Request',
-            self::ANSWER_WAIVE => 'Waive Request Response',
-            self::CLOSE_PARKING_EVENT => 'Parking Event Closed',
-            self::NEW_VC_RATE => 'New Agent Rating',
-            self::CAR_PREPARATION_REQUESTED => 'New Agent Rating',
-            self::ACCEPT_REQUESTED => 'New Agent Rating',
-            self::ACCEPT_PREPARING => 'New Agent Rating',
-            self::CANCEL_REQUEST => 'New Agent Rating',
+            self::REQUEST_PARKING_SERVICE       => trans('New Parking Request'),
+            self::REQUEST_CAR                   => trans('Car Retrieval Request'),
+            self::NEW_VP_RATE                   => trans('New Customer Rating'),
+            self::NEW_PAYMENT                   => trans('New Payment Made'),
+            self::ASK_FOR_WAIVE                 => trans('Fee Waive Request'),
+            self::ANSWER_WAIVE                  => trans('Waive Request Response'),
+            self::CLOSE_PARKING_EVENT           => trans('Parking Event Closed'),
+            self::NEW_VC_RATE                   => trans('New Agent Rating'),
+            self::CAR_PREPARATION_REQUESTED     => trans('Car Preparation Requested'),
+            self::ACCEPT_REQUESTED              => trans('Parking Request Accepted'),
+            self::ACCEPT_PREPARING              => trans('Agent Arrived and Preparing'),
+            self::CANCEL_REQUEST                => trans('Parking Request Cancelled'),
         };
     }
 

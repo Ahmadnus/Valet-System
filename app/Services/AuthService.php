@@ -185,9 +185,19 @@ class AuthService
         ]);
 
     }
-    public function logout() {
-        $user = Auth:: user();
-        $user->$this->currentAccessToken()->delete();
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+
+        $token = $request->$user?->currentAccessToken();
+
+        if (!$token) {
+            throw new \Exception('User already logged out or token not found.');
+        }
+
+        $token->delete();
+        $user->$request->fcmTokens()->delete();
+
         return true;
     }
 }

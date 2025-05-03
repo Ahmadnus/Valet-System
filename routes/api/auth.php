@@ -10,5 +10,5 @@ Route::prefix('auth')->group(function () {
     Route::post('signupAdmin', [AuthController::class, "siginUpAd"]);
     Route::post('login', [AuthController::class, "login"]);
     Route::post('loginAdmin', [AuthController::class, "loginAd"]);
-    Route::post('logout/{id}', [AuthController::class, "logout"]);
+    Route::post('logout', [AuthController::class, 'logout']);
 });

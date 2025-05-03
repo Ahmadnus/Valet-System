@@ -33,8 +33,73 @@
 "Fee waiver request sent.":"تم ارسال طلب اعفاء من الرسوم  ",
 "Car type created successfully!":"تم انشاء نوع سيارة",
 "You are already send.":"لقد ارسلت بالفعل",
-"You have already rated this user for this request.":"لقد قييمت بالفعل"
+"You have already rated this user for this request.":"لقد قييمت بالفعل",
+"New Parking Request": "طلب وقوف جديد",
+    "Car Retrieval Request": "طلب استرجاع السيارة",
+    "New Customer Rating": "تقييم جديد من العميل",
+    "New Payment Made": "تم الدفع بنجاح",
+    "Fee Waive Request": "طلب إعفاء من الرسوم",
+    "Waive Request Response": "رد على طلب الإعفاء",
+    "Parking Event Closed": "تم إغلاق الطلب",
+    "New Agent Rating": "تقييم جديد للمساعد",
+    "Car Preparation Requested": "تم طلب تجهيز السيارة",
+    "Parking Request Accepted": "تم قبول الطلب",
+    "Agent Arrived and Preparing": "المساعد في الطريق ويجهز السيارة",
+    "Parking Request Cancelled": "تم إلغاء الطلب",
 
+    "Fee Waiver": "طلب إعفاء",
+    "Your fee waiver request has been :status.": "تم معالجة طلب الإعفاء الخاص بك: :status.",
+    "approved": "مقبول",
+    "rejected": "مرفوض",
+
+        "Fee Waiver Request": "طلب إعفاء من الرسوم",
+        "A customer has requested a fee waiver for a parking service.": "طلب أحد العملاء إعفاءً من رسوم خدمة الوقوف.",
+        "New Rating Received": "تم استلام تقييم جديد",
+        "You have received a new rating from a :role.": "لقد تلقيت تقييمًا جديدًا من :role.",
+
+    "A new parking request has been created by a customer.": "تم إنشاء طلب وقوف جديد من قبل أحد العملاء.",
+"Request Accepted": "تم قبول الطلب",
+    "Your parking request has been accepted by a valet agent.": "تم قبول طلب الوقوف الخاص بك من قبل أحد موظفي الفاليه.",
+    "Your delivery request has been accepted by a valet agent.": "تم قبول طلب تسليم سيارتك من قبل أحد موظفي الفاليه.",
+
+    "A customer has requested their car to be prepared.": "قام أحد العملاء بطلب تجهيز سيارته.",
+    "Request Canceled": "تم إلغاء الطلب",
+    "Your parking request has been canceled by the valet agent.": "تم إلغاء طلب الوقوف الخاص بك من قبل موظف الفاليه.",
+
+
+    "User not found": "المستخدم غير موجود",
+    "Invalid role": "الدور غير صالح",
+    "Role not found": "لم يتم العثور على الدور",
+    "User created successfully": "تم إنشاء المستخدم بنجاح",
+    "User updated successfully": "تم تحديث المستخدم بنجاح",
+    "User deleted successfully": "تم حذف المستخدم بنجاح",
+    "Users retrieved successfully": "تم استرجاع المستخدمين بنجاح",
+    "User retrieved successfully": "تم استرجاع المستخدم بنجاح",
+    "User role counts retrieved successfully":"asdsa",
+
+     "You are too far from the nearest location. Please get closer.": "أنت بعيد جدًا عن أقرب موقع. يرجى الاقتراب.",
+
+     "This plate number is already registered.": "رقم اللوحة هذا مسجل بالفعل.",
+     "Plate number must be a string.": "رقم اللوحة يجب أن يكون نصًا.",
+     "Invalid cartypeable type.": "نوع السيارة غير صالح.",
+     "Cartypeable type must be a string.": "نوع السيارة يجب أن يكون نصًا.",
+     "Selected car type does not exist.": "نوع السيارة المحدد غير موجود.",
+     "Car type ID must be a number.": "معرف نوع السيارة يجب أن يكون رقمًا.",
+     "The uploaded file must be an image.": "الملف المرفوع يجب أن يكون صورة.",
+     "The image must be a file of type: jpg, jpeg, png.": "الصورة يجب أن تكون من نوع: jpg أو jpeg أو png.",
+     "The image must not be greater than 2MB.": "يجب ألا يتجاوز حجم الصورة 2 ميجابايت.",
+
+     "Phone number is required": "حقل رقم الهاتف مطلوب.",
+     "Phone number is invalid": "رقم الهاتف غير صالح.",
+     "Plate number is required": "حقل رقم اللوحة مطلوب.",
+     "Plate number must be a string": "يجب أن يكون رقم اللوحة نصًا.",
+     "Location ID is required": "حقل معرف الموقع مطلوب.",
+     "Selected location ID is invalid": "معرف الموقع المحدد غير صالح.",
+     "Parking slot ID is required": "حقل معرف مكان الاصطفاف مطلوب.",
+     "Selected parking slot ID is invalid": "معرف مكان الاصطفاف المحدد غير صالح.",
+     "Car typeable ID is required": "حقل معرف نوع السيارة مطلوب.",
+     "Car typeable ID must be an integer": "يجب أن يكون معرف نوع السيارة عددًا صحيحًا.",
+     "Requested by user is required": "حقل طلب من المستخدم مطلوب."
 
 
 }

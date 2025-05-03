@@ -115,10 +115,6 @@ class TradRequestService
              }
 
 
-             if (!is_null($request->total_hours) && $request->total_hours > 0) {
-                 throw new \Exception('Payment has already been calculated for this request.');
-             }
-
              $this->validatePlateNumber($request, $data['plate_number']);
 
 

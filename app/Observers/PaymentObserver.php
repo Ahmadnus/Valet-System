@@ -36,7 +36,7 @@ class PaymentObserver
             $userRequest = UserRequest::find($payment->request_id);
             $user = $userRequest?->user;
 
-            // Create Payment History Record
+
             PaymentHistory::create([
                 'user_id' => $user->id,
                 'amount' => $payment->amount,
@@ -46,9 +46,9 @@ class PaymentObserver
                 'updated_at' => now(),
             ]);
 
-            // Update Loyalty Points
+
             $loyaltyPoints = LoyaltyPoint::firstOrCreate(['user_id' => $user->id]);
-            $loyaltyPoints->points += $payment->amount / 10;
+            $loyaltyPoints->points += $payment->amount / 100;
             $loyaltyPoints->save();
 
             Log::info("Payment history and loyalty points updated for user_id: {$user->id}");

@@ -23,7 +23,7 @@ class HostController extends Controller
     public function indexAgents()
     {
         try {
-            $locations = $this->valetHostService->getAgentsForHost(); // or `getMyAgents()`
+            $locations = $this->valetHostService->getAgentsForHost();
             return $this->successResponse('Agents fetched successfully.', $locations);
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());

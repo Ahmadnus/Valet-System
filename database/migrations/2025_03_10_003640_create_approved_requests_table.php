@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('plate_number');
-            $table->string('key_box');
+
             $table->morphs('cartypeable');
             $table->enum('status', ['pending', 'in_progress', 'completed', 'rejected'])->default('pending');
             $table->timestamps();
