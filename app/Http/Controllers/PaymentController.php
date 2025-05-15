@@ -5,6 +5,7 @@ use App\Models\Request as UserRequest;
 
 use App\Services\Payments\PaymentService;
 use App\Models\Payment;
+use App\Models\Invoice;
 use App\Models\User;
 use App\Models\LoyaltyPoint;
 use App\Models\ValetTime;
@@ -47,21 +48,37 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
 
-        $paymentHistory = PaymentHistory::where('user_id', $user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get the latest invoice entry
+        $invoice = Invoice::where('user_id', $user->id)->latest()->first();
 
-        return response()->json([
-            'success' => true,
-            'payment_history' => $paymentHistory
-        ]);
+        // Fetch the price before discount if valet_time still exists
+        $valetTime = ValetTime::where('user_id', $user->id)->first();
+
+        return [
+            'last_invoice' => $invoice,
+            'used_loyalty_points' => $invoice && $invoice->points_used > 0,
+            'points_used' => $invoice->points_used ?? 0,
+            'total_amount' => $invoice->total_amount ?? ($valetTime->price ?? 0),
+            'remaining_balance' => $invoice->remaining_balance ?? ($valetTime->price ?? 0),
+        ];
     }
 
-
-    public function showPay(){
+    public function showPay()
+    {
         $user = Auth::user();
 
-        $payment = ValetTime::where('user_id', $user->id)->get();
-return $payment;
+        // Get the latest valet time (payment)
+        $payment = ValetTime::where('user_id', $user->id)->first();
+
+        // Get latest invoice (if any)
+        $invoice = Invoice::where('user_id', $user->id)->latest()->first();
+
+        return [
+            'payment' => $payment,
+            'invoice' => $invoice,
+            'used_loyalty_points' => $invoice && $invoice->points_used > 0,
+            'points_used' => $invoice->points_used ?? 0,
+            'remaining_balance' => $invoice->remaining_balance ?? ($payment->price ?? 0),
+        ];
     }
 }

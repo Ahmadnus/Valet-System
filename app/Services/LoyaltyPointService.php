@@ -5,6 +5,7 @@ namespace App\Services;
 use App\app\traits\CheckRequestStatus;
 use App\Models\LoyaltyPoint;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\ValetTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +23,7 @@ class LoyaltyPointService
         $loyalty = LoyaltyPoint::forUser()->first();
 
         if (!$loyalty) {
-            throw new Exception("Loyalty points record not found.");
+            throw new Exception(trans("Loyalty points record not found."));
         }
 
         return $loyalty->points;
@@ -43,27 +44,51 @@ class LoyaltyPointService
 
         $loyalty = LoyaltyPoint::forUser($user->id)->first();
 
-        if (!$loyalty || $loyalty->points < $points) {
-            throw new Exception("Not enough points.");
+        if (!$loyalty || $loyalty->points <= 0) {
+            throw new Exception(trans("You don't have enough points."));
         }
 
-        $loyalty->points -= $points;
-        $loyalty->save();
+        // Convert "all" to numeric value
+        if ($points === 'all') {
+            $points = $loyalty->points;
+        }
 
-        $remainingBalance = max(0, $price - ($points / 10));
+        // Validate input is numeric and not more than available
+        if (!is_numeric($points) || $points < 1 || $points > $loyalty->points) {
+            throw new Exception(trans("Invalid points amount."));
+        }
 
+        // Determine how many points to actually use
+        $maxUsablePoints = min($points, $price * 10); // 1 point = $0.10
+        $discountAmount = $maxUsablePoints / 10;
+        $remainingBalance = max(0, $price - $discountAmount);
+
+        // Create invoice
         $invoice = Invoice::create([
             'user_id' => $user->id,
             'total_amount' => $price,
-            'points_used' => $points,
+            'points_used' => $maxUsablePoints,
             'remaining_balance' => $remainingBalance,
         ]);
 
+        // Update loyalty points and valet time
+        $loyalty->points -= $maxUsablePoints;
+        $loyalty->save();
+
         $valetTime->update(['price' => $remainingBalance]);
+
+        // If balance is fully paid with points, create a completed payment
+        if ($remainingBalance == 0) {
+            Payment::create([
+                'request_id'     => $requestId,
+                'amount'         => $price,
+                'status'         => 'completed',
+                'payment_method' => 'points',
+            ]);
+        }
 
         DB::commit();
 
         return $invoice;
-    }
-}
+    }}
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\CartypeController;
 use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\TradParkingController;
 use App\Http\Middleware\lang;
 Route::middleware(['auth:sanctum', 'check.role:valet_provider',lang::class])->group(function () {
 
@@ -32,6 +33,11 @@ Route::delete('cartypes/{cartype}', [CartypeController::class, 'destroy']);
         Route::post('/users', [ManagerController::class, 'store']);
         Route::put('/users/{user}', [ManagerController::class, 'update']);
         Route::delete('/users/{id}', [ManagerController::class, 'destroy']);
+        Route::get('/earnings/today/locations', [TradParkingController::class, 'getTodayCashEarningsPerLocation']);
+        Route::get('/earnings/today/total', [TradParkingController::class, 'getTodayTotalCash']);
+
+
+
 
     });
     Route::middleware(['auth:sanctum','check.role:valet_provider'])->group(function () {
@@ -47,7 +53,3 @@ Route::delete('cartypes/{cartype}', [CartypeController::class, 'destroy']);
         Route::get('/ratings/agents', [RatingController::class, 'getAllAgentRatings']);
 
         });
-
-
-
-

@@ -19,7 +19,7 @@ class LocationService
         $userLng = $request->longitude;
 
         if (!$userLat || !$userLng) {
-            throw new \Exception('Latitude and longitude are required');
+            throw new \Exception(trans('Latitude and longitude are required'));
         }
 
         $maxDistanceKm = 10;

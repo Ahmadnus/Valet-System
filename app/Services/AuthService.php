@@ -30,10 +30,12 @@ class AuthService
             $existingUser = User::where('phone_number', $data['phone_number'])->first();
 
             if ($existingUser && $existingUser->hasRole('valet_guest')) {
-
+                $client = Customer::create([]);
                 $existingUser->update([
                     'name' => $data['name'],
                     'password' => bcrypt($data['password']),
+                    'userable_id' => $client->id,
+                    'userable_type' => Customer::class,
                 ]);
 
 

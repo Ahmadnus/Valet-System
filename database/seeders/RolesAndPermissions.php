@@ -36,7 +36,7 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Customer User',
 
-            'phone_number' => '+963939115126',
+            'phone_number' => '+963942345678',
             'password' => Hash::make('password'),
             'role' => 'valet_customer',
             'userable' => Customer::create([]),
@@ -44,7 +44,7 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Agent User',
 
-            'phone_number' => '+963937875878',
+            'phone_number' => '+963932345678',
             'password' => Hash::make('password'),
             'role' => 'valet_agent',
             'userable' => Agent::create([]),
@@ -52,7 +52,7 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Host User',
             'email' => 'host@example.com',
-            'phone_number' => '345678901321',
+            'phone_number' => '+963922345678',
             'password' => Hash::make('password'),
             'role' => 'valet_host',
             'userable' => Host::create([]),
@@ -60,7 +60,7 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Provider User',
 
-            'phone_number' => '4567890123131',
+            'phone_number' => '+963912345678',
             'password' => Hash::make('password'),
             'role' => 'valet_provider',
             'userable' => Provider::create([]),
@@ -68,7 +68,7 @@ class RolesAndPermissions extends Seeder
         [
             'name' => 'Manager User',
 
-            'phone_number' => '88888888',
+            'phone_number' => '+963939115126',
             'password' => Hash::make('password'),
             'role' => 'platform_manager',
             'userable' => Manager::create([]),

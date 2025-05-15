@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\app\Traits\ValidationTrait;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateUserRequest extends FormRequest
 {
+    use ValidationTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -31,4 +33,24 @@ class UpdateUserRequest extends FormRequest
             'role' => 'sometimes|string|exists:roles,name'
         ];
     }
+    public function messages(): array
+{
+    return [
+        'name.string' => trans('Name must be a string.'),
+        'name.max' => trans('Name must not exceed 255 characters.'),
+
+        'email.string' => trans('Email must be a string.'),
+        'email.email' => trans('Email must be a valid email address.'),
+        'email.unique' => trans('Email has already been taken.'),
+
+        'password.string' => trans('Password must be a string.'),
+        'password.min' => trans('Password must be at least 6 characters.'),
+
+        'phone_number.string' => trans('Phone number must be a string.'),
+        'phone_number.max' => trans('Phone number must not exceed 20 characters.'),
+
+        'role.string' => trans('Role must be a string.'),
+        'role.exists' => trans('Selected role does not exist.'),
+    ];
+}
 }

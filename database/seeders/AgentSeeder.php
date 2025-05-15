@@ -20,7 +20,7 @@ class AgentSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 20; $i++) {
             $agent = Agent::create(); // Empty agent record
 
             $user = User::create([

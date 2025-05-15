@@ -99,7 +99,118 @@
      "Selected parking slot ID is invalid": "معرف مكان الاصطفاف المحدد غير صالح.",
      "Car typeable ID is required": "حقل معرف نوع السيارة مطلوب.",
      "Car typeable ID must be an integer": "يجب أن يكون معرف نوع السيارة عددًا صحيحًا.",
-     "Requested by user is required": "حقل طلب من المستخدم مطلوب."
+     "Requested by user is required": "حقل طلب من المستخدم مطلوب.",
 
+     "Latitude is required.": "مطلوب إدخال خط العرض.",
+     "Latitude must be a number.": "يجب أن يكون خط العرض رقماً.",
+     "Latitude must be between -90 and 90.": "يجب أن يكون خط العرض بين -90 و 90.",
+     "Longitude is required.": "مطلوب إدخال خط الطول.",
+     "Longitude must be a number.": "يجب أن يكون خط الطول رقماً.",
+     "Longitude must be between -180 and 180.": "يجب أن يكون خط الطول بين -180 و 180.",
+     "English type is required.": "مطلوب إدخال النوع باللغة الإنجليزية.",
+     "English type must be a string.": "يجب أن يكون النوع باللغة الإنجليزية نصًا.",
+     "English type must not exceed 255 characters.": "يجب ألا يتجاوز النوع باللغة الإنجليزية 255 حرفًا.",
+
+     "Arabic type is required.": "مطلوب إدخال النوع باللغة العربية.",
+     "Arabic type must be a string.": "يجب أن يكون النوع باللغة العربية نصًا.",
+     "Arabic type must not exceed 255 characters.": "يجب ألا يتجاوز النوع باللغة العربية 255 حرفًا.",
+
+     "Logo must be an image.": "يجب أن تكون الشعار صورة.",
+     "Logo must be a file of type: jpg, jpeg, png, webp.": "يجب أن يكون الشعار من نوع: jpg, jpeg, png, webp.",
+     "Logo must not be greater than 2MB.": "يجب ألا يتجاوز حجم الشعار 2 ميجابايت.",
+     "Name is required.": "مطلوب إدخال الاسم.",
+    "Name must be a string.": "يجب أن يكون الاسم نصًا.",
+    "Name may only contain letters and spaces.": "يمكن أن يحتوي الاسم على أحرف ومسافات فقط.",
+
+    "Phone number is required.": "مطلوب إدخال رقم الهاتف.",
+
+    "Password is required.": "مطلوب إدخال كلمة المرور.",
+    "Password must be a string.": "يجب أن تكون كلمة المرور نصًا.",
+    "Password must be at least 8 characters.": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+    "Password confirmation does not match.": "تأكيد كلمة المرور غير متطابق.",
+
+    "Plate number must be a string.": "يجب أن يكون رقم اللوحة نصًا.",
+    "Plate number has already been taken.": "رقم اللوحة مستخدم بالفعل.",
+
+    "Image must be a valid image.": "يجب أن تكون الصورة صالحة.",
+    "Image must be of type: jpg, jpeg, png, webp.": "يجب أن تكون الصورة من نوع: jpg, jpeg, png, webp.",
+    "Image must not exceed 2MB.": "يجب ألا يتجاوز حجم الصورة 2 ميجابايت.",
+
+    "Cartype ID must be an integer.": "يجب أن يكون رقم نوع السيارة عددًا صحيحًا.",
+    "Phone number is required.": "مطلوب إدخال رقم الهاتف.",
+
+    "Plate number is required.": "مطلوب إدخال رقم اللوحة.",
+    "Plate number must be a string.": "يجب أن يكون رقم اللوحة نصًا.",
+
+    "Location is required.": "مطلوب تحديد الموقع.",
+    "Selected location does not exist.": "الموقع المحدد غير موجود.",
+
+    "Parking slot is required.": "مطلوب تحديد موقف السيارة.",
+    "Selected parking slot does not exist.": "موقف السيارة المحدد غير موجود.",
+
+    "Car type ID is required.": "مطلوب إدخال رقم نوع السيارة.",
+    "Car type ID must be an integer.": "يجب أن يكون رقم نوع السيارة عددًا صحيحًا.",
+
+    "Requested by user is required.": "مطلوب تحديد من قام بالطلب.",
+    "Name must be a string.": "يجب أن يكون الاسم نصًا.",
+    "Name must not exceed 255 characters.": "يجب ألا يتجاوز الاسم 255 حرفًا.",
+
+    "Email must be a string.": "يجب أن يكون البريد الإلكتروني نصًا.",
+    "Email must be a valid email address.": "يجب أن يكون البريد الإلكتروني صالحًا.",
+    "Email has already been taken.": "البريد الإلكتروني مستخدم بالفعل.",
+
+    "Password must be a string.": "يجب أن تكون كلمة المرور نصًا.",
+    "Password must be at least 6 characters.": "يجب ألا تقل كلمة المرور عن 6 أحرف.",
+
+    "Phone number must be a string.": "يجب أن يكون رقم الهاتف نصًا.",
+    "Phone number must not exceed 20 characters.": "يجب ألا يتجاوز رقم الهاتف 20 حرفًا.",
+
+    "Role must be a string.": "يجب أن يكون الدور نصًا.",
+    "Selected role does not exist.": "الدور المحدد غير موجود.",
+    "Arabic name must be a string.": "يجب أن يكون الاسم العربي نصًا.",
+    "Arabic name must not exceed 255 characters.": "يجب ألا يتجاوز الاسم العربي 255 حرفًا.",
+    "English name must be a string.": "يجب أن يكون الاسم الإنجليزي نصًا.",
+    "English name must not exceed 255 characters.": "يجب ألا يتجاوز الاسم الإنجليزي 255 حرفًا.",
+
+    "Latitude is required.": "مطلوب إدخال خط العرض.",
+    "Latitude must be a number.": "يجب أن يكون خط العرض رقمًا.",
+    "Latitude must be between -90 and 90.": "يجب أن يكون خط العرض بين -90 و 90.",
+
+    "Longitude is required.": "مطلوب إدخال خط الطول.",
+    "Longitude must be a number.": "يجب أن يكون خط الطول رقمًا.",
+    "Longitude must be between -180 and 180.": "يجب أن يكون خط الطول بين -180 و 180.",
+
+    "Cost is required.": "مطلوب إدخال التكلفة.",
+    "Cost must be a number.": "يجب أن تكون التكلفة رقمًا.",
+    "Cost must be at least 0.": "يجب ألا تقل التكلفة عن 0.",
+
+    "Agent IDs must be an array.": "يجب أن تكون معرفات الوكلاء مصفوفة.",
+    "Each agent ID must be an integer.": "يجب أن يكون كل معرف وكيل عددًا صحيحًا.",
+    "One or more agent IDs are invalid.": "أحد أو أكثر من معرفات الوكلاء غير صالح.",
+    "Points are required.": "النقاط مطلوبة.",
+    "Points must be an integer.": "يجب أن تكون النقاط عددًا صحيحًا.",
+    "Points must be at least 1.": "يجب ألا تقل النقاط عن 1.",
+    "Request ID must be an integer.": "يجب أن يكون معرف الطلب عددًا صحيحًا.",
+    "The selected request ID is invalid.": "معرف الطلب المحدد غير صالح.",
+    "Plate number must not exceed 20 characters.": "يجب ألا يتجاوز رقم اللوحة 20 حرفًا.",
+    "Agent ID is required.": "معرف السائق مطلوب.",
+    "Agent ID must be an integer.": "يجب أن يكون معرف السائق عددًا صحيحًا.",
+    "Latitude is required.": "خط العرض مطلوب.",
+    "Latitude must be a number.": "يجب أن يكون خط العرض رقمًا.",
+    "Longitude is required.": "خط الطول مطلوب.",
+    "Longitude must be a number.": "يجب أن يكون خط الطول رقمًا.",
+    "The selected customer is invalid.": "العميل المحدد غير صالح.",
+    "Rating is required.": "التقييم مطلوب.",
+    "Rating must be a number.": "يجب أن يكون التقييم رقمًا.",
+    "Rating must be at least 1.": "يجب ألا يقل التقييم عن 1.",
+    "Rating may not be greater than 5.": "يجب ألا يزيد التقييم عن 5.",
+    "Comment must be a string.": "يجب أن يكون التعليق نصًا.",
+    "Comment may not be greater than 1000 characters.": "يجب ألا يتجاوز التعليق 1000 حرف.",
+
+    "The plate number is already taken.": "رقم اللوحة مستخدم بالفعل.",
+    "The selected car type is invalid.": "نوع السيارة المحدد غير صالح.",
+    "The selected car type ID does not exist.": "معرف نوع السيارة المحدد غير موجود.",
+    "The image must be a file of type: jpg, jpeg, png.": "يجب أن تكون الصورة من نوع: jpg أو jpeg أو png.",
+    "The image size must not exceed 2MB.": "يجب ألا يتجاوز حجم الصورة 2 ميغابايت."
 
 }

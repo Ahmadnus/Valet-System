@@ -26,4 +26,13 @@ class CompleteValetRequest extends FormRequest
             'plate_number' => 'max:20',
         ];
     }
+    public function messages(): array
+{
+    return [
+        'request_id.integer' => trans('Request ID must be an integer.'),
+        'request_id.exists' => trans('The selected request ID is invalid.'),
+
+        'plate_number.max' => trans('Plate number must not exceed 20 characters.'),
+    ];
+}
 }

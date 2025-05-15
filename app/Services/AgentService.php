@@ -17,7 +17,7 @@ class AgentService
         $locationAgent = LocationAgent::where('agent_id', $agent->id)->first();
 
         if (!$locationAgent) {
-            throw new \Exception('No active location assigned to this agent.');
+            throw new \Exception(trans('No active location assigned to this agent.'));
         }
 
         return ParkingSlot::where('location_id', $locationAgent->location_id)->get();

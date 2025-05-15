@@ -12,6 +12,6 @@ class CarsSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        // Pick a random existing cartypeable_id for now (you can customize this if needed)
     }
 }

@@ -140,7 +140,7 @@ public function deleteUser($id)
             'valet_customer' => Customer::create([]),
             'valet_agent' => Agent::create([]),
             'valet_host' => Host::create([]),
-            'valet_provider' => Provider::create([]),
+
             default => null,
         };
     }

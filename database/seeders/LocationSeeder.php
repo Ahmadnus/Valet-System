@@ -16,46 +16,54 @@ class LocationSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        $agentIds = [2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+{
+    $hostIds = range(46, 55); // 10 hosts
+    $agentIds = range(6, 25); // 20 agents
+    $locations = [];
 
-        for ($i = 1; $i <= 6; $i++) {
-            DB::beginTransaction();
+    // Create one location per host
+    foreach ($hostIds as $index => $hostId) {
+        DB::beginTransaction();
 
-            try {
-                $location = Location::create([
-                    'latitude' => 24.7136 + mt_rand(-1000, 1000) / 10000, // Random small offset
-                    'longitude' => 46.6753 + mt_rand(-1000, 1000) / 10000,
-                    'cost' => rand(10, 50),
-                    'host_id' => 1, // Change if you use multiple hosts
-                    'ar' => ['name' => "موقع $i"],
-                    'en' => ['name' => "Location $i"],
+        try {
+            $location = Location::create([
+                'latitude' => 24.7136 + mt_rand(-1000, 1000) / 10000,
+                'longitude' => 46.6753 + mt_rand(-1000, 1000) / 10000,
+                'cost' => rand(10, 50),
+                'host_id' => $hostId,
+                'ar' => ['name' => "موقع " . ($index + 1)],
+                'en' => ['name' => "Location " . ($index + 1)],
+            ]);
+
+            $locations[] = $location;
+
+            // Create 3–6 parking slots
+            $slotsCount = rand(3, 6);
+            for ($j = 1; $j <= $slotsCount; $j++) {
+                ParkingSlot::create([
+                    'location_id' => $location->id,
+                    'slot_number' => "SLOT-$j",
+                    'status' => 'available',
                 ]);
-
-                // Create random 3–6 parking slots
-                $slotsCount = rand(3, 6);
-                for ($j = 1; $j <= $slotsCount; $j++) {
-                    $slotNumber = "SLOT-$j";
-
-                    ParkingSlot::create([
-                        'location_id' => $location->id,
-                        'slot_number' => $slotNumber,
-                        'status' => 'available',
-                    ]);
-                }
-
-
-                $assignedAgents = collect($agentIds)->random(rand(3, 5))->all();
-                $location->agents()->attach($assignedAgents);
-
-                DB::commit();
-
-                Log::info("Seeded location $i with {$slotsCount} slots and agents: " . implode(', ', $assignedAgents));
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error("Failed to seed location $i: " . $e->getMessage());
             }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Failed to create location for host $hostId: " . $e->getMessage());
         }
     }
 
+    // Assign each agent to a random location (no repetition per agent)
+    foreach ($agentIds as $agentId) {
+        $location = collect($locations)->random();
+
+        DB::table('location_agent')->insert([
+            'agent_id' => $agentId,
+            'location_id' => $location->id,
+        ]);
+
+        Log::info("Assigned agent $agentId to location {$location->id}");
+    }
+}
 }

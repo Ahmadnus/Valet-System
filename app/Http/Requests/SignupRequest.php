@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 use App\Rules\SyrianPhoneNumber;
+use App\Traits\app\Traits\ValidationTrait;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SignupRequest extends FormRequest
 {
+    use ValidationTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,18 +31,19 @@ class SignupRequest extends FormRequest
         ];
 
     }
-    public function messages()
-{
-    return [
-        'name.required' => trans('validation.name_required'),
-        'name.string' => trans('validation.name_string'),
-        'name.regex' => trans('validation.name_regex'),
-        'phone_number.required' => trans('validation.phone_number_required'),
-        'phone_number.regex' => trans('validation.phone_number_invalid'),
-        'password.required' => trans('validation.password_required'),
-        'password.string' => trans('validation.password_string'),
-        'password.min' => trans('validation.password_min'),
-        'password.confirmed' => trans('validation.password_confirmed'),
-    ];
-}
+    public function messages(): array
+    {
+        return [
+            'name.required' => trans('Name is required.'),
+            'name.string' => trans('Name must be a string.'),
+            'name.regex' => trans('Name may only contain letters and spaces.'),
+
+            'phone_number.required' => trans('Phone number is required.'),
+
+            'password.required' => trans('Password is required.'),
+            'password.string' => trans('Password must be a string.'),
+            'password.min' => trans('Password must be at least 8 characters.'),
+            'password.confirmed' => trans('Password confirmation does not match.'),
+        ];
+    }
 }

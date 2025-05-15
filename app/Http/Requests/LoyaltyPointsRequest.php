@@ -22,8 +22,16 @@ class LoyaltyPointsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'points' => ['required', 'integer', 'min:1'],
+            'points' => ['required', 'min:1'],
 
         ];
     }
+    public function messages(): array
+{
+    return [
+        'points.required' => trans('Points are required.'),
+        'points.integer' => trans('Points must be an integer.'),
+        'points.min' => trans('Points must be at least 1.'),
+    ];
+}
 }

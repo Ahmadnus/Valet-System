@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\app\Traits\ValidationTrait;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCarRequest extends FormRequest
 {
+    use ValidationTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,4 +30,17 @@ class UpdateCarRequest extends FormRequest
 
         ];
     }
+    public function messages(): array
+{
+    return [
+        'plate_number.string' => trans('Plate number must be a string.'),
+        'plate_number.unique' => trans('Plate number has already been taken.'),
+
+        'image.image' => trans('Image must be a valid image.'),
+        'image.mimes' => trans('Image must be of type: jpg, jpeg, png, webp.'),
+        'image.max' => trans('Image must not exceed 2MB.'),
+
+        'cartypeable_id.integer' => trans('Cartype ID must be an integer.'),
+    ];
+}
 }

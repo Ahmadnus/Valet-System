@@ -2,10 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\app\Traits\ValidationTrait;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+
 
 class FindNearestLocationRequest extends FormRequest
 {
+    use ValidationTrait;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,15 +33,19 @@ class FindNearestLocationRequest extends FormRequest
         ];
     }
 
+
     public function messages(): array
     {
         return [
-            'latitude.required' => 'Latitude is required.',
-            'latitude.numeric' => 'Latitude must be a number.',
-            'latitude.between' => 'Latitude must be between -90 and 90.',
-            'longitude.required' => 'Longitude is required.',
-            'longitude.numeric' => 'Longitude must be a number.',
-            'longitude.between' => 'Longitude must be between -180 and 180.',
+            'latitude.required' => trans('Latitude is required.'),
+            'latitude.numeric' => trans('Latitude must be a number.'),
+            'latitude.between' => trans('Latitude must be between -90 and 90.'),
+            'longitude.required' => trans('Longitude is required.'),
+            'longitude.numeric' => trans('Longitude must be a number.'),
+            'longitude.between' => trans('Longitude must be between -180 and 180.'),
         ];
     }
+
+
+
 }

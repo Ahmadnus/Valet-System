@@ -6,6 +6,7 @@ use App\Models\Car;
 use App\Models\Location;
 use App\Models\LocationAgent;
 use App\Models\Payment;
+use App\Models\ValetTime;
 use App\Models\Request as userRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,13 @@ class TradRequestService
      {
          return DB::transaction(function () use ($data) {
              $agentId = Auth::id();
+             $isAuthorized = LocationAgent::where('agent_id', $agentId)
+             ->where('location_id', $data['location_id'])
+             ->exists();
+
+         if (!$isAuthorized) {
+             throw new \Exception(trans('You are not authorized to create a parking request for this location.'));
+         }
 
              $user = User::firstOrCreate(
                  ['phone_number' => $data['phone_number']],
@@ -111,9 +119,11 @@ class TradRequestService
                  userRequest::STATUS_PENDING,
                  userRequest::STATUS_ACCEPTED,
              ])) {
-                 throw new \Exception('Cannot create a payment before the parking is in progress.');
+                 throw new \Exception(trans('Cannot create a payment before the parking is in progress.'));
              }
-
+             if ($request->payment) {
+                throw new \Exception(trans('A payment already exists for this request.'));
+            }
 
              $this->validatePlateNumber($request, $data['plate_number']);
 
@@ -122,14 +132,18 @@ class TradRequestService
                  ? now()->diffInHours($request->in_progress_time)
                  : 0);
 
-             $request->update(['total_hours' => $totalHours]);
+             $request->update(
+                ['total_hours' => $totalHours,
+            'requested_by_user' => 1]);
 
              $location = Location::findOrFail($request->location_id);
-             $amount = $location->cost * $totalHours;
+
+             $amount = ValetTime::where('request_id',$id)->first();
+             dd( $amount);
 
              $payment = Payment::create([
                  'request_id'     => $request->id,
-                 'amount'         => $amount,
+                 'amount'         => $amount->price,
                  'status'         => 'pending',
                  'payment_method' => $data['payment_method'] ?? 'cash',
              ]);
@@ -176,7 +190,7 @@ class TradRequestService
     $request = userRequest::with('user.roles')->findOrFail($id);
 
     if (!$request->user->getRoleNames()->contains('valet_guest')) {
-        throw new \Exception('This request does not belong to a guest user.');
+        throw new \Exception(trans('This request does not belong to a guest user.'));
     }
 
     return $request;
@@ -187,8 +201,40 @@ private function validatePlateNumber($request, string $plateNumber)
     $car = Car::where('plate_number', $plateNumber)->first();
 
     if (!$car || $request->car_id !== $car->id) {
-        throw new \Exception('The plate number does not match the car in this request.');
+        throw new \Exception(trans('The plate number does not match the car in this request.'));
     }
+}
+public function getTodayCashEarningsPerLocation()
+{
+    $cashPayments = Payment::where('payment_method', 'cash')
+        ->where('status', 'completed')
+        ->whereDate('created_at', now()->toDateString())
+        ->with('request')
+        ->get();
+
+    $grouped = $cashPayments->groupBy(function ($payment) {
+        return optional($payment->request)->location_id;
+    })->map(function ($group) {
+        return $group->sum('amount');
+    });
+
+    return $grouped;
+}
+
+public function getTodayTotalCash()
+{
+    $cashPayments = Payment::where('payment_method', 'cash')
+        ->where('status', 'completed')
+        ->whereDate('created_at', now()->toDateString())
+        ->with('request')
+        ->get();
+
+    $totalCash = $cashPayments->sum('amount');
+
+    return [
+        'total_cash' => $totalCash,
+        'payments' => $cashPayments
+    ];
 }
 
 }

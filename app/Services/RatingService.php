@@ -38,7 +38,7 @@ protected function handleRatingByRequest(int $requestId, array $data, string $ex
 
 
     if ($request->user_id !== $rater->id && $request->valet_agent_id !== $rater->id) {
-        throw new Exception("You are not authorized to rate for this request.");
+        throw new Exception(trans("You are not authorized to rate for this request."));
     }
 
 
@@ -59,7 +59,7 @@ protected function handleRatingByRequest(int $requestId, array $data, string $ex
     ])->first();
 
     if (!$existingCompletedRequest) {
-        throw new \Exception("You can only rate a user after a completed request.");
+        throw new \Exception(trans("You can only rate a user after a completed request."));
     }
 
 
@@ -116,8 +116,8 @@ protected function handleRatingByRequest(int $requestId, array $data, string $ex
         return $rating;
     } catch (\Exception $e) {
         DB::rollBack();
-        Log::error('Failed to create rating: ' . $e->getMessage());
-        throw new Exception("Error while creating rating.");
+        Log::error(trans('Failed to create rating: ') . $e->getMessage());
+        throw new Exception(trans("Error while creating rating."));
     }
 }
 public function getAllAgentRatings()

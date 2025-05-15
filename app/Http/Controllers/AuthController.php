@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SignupRequest;
+use App\Rules\SyrianPhoneNumber;
 
 class AuthController extends Controller
 {
@@ -46,12 +47,12 @@ class AuthController extends Controller
     public function login(Request $request)
     {
 
-        $data = $request->validate([
-            'phone_number' => 'required|exists:users,phone_number',
-            'password' => ['required'],
-            'fcm_token'=>[]
 
-        ]);
+$data = $request->validate([
+    'phone_number' => ['required', new SyrianPhoneNumber, 'exists:users,phone_number'],
+    'password'     => ['required'],
+    'fcm_token'    => [],
+]);
 
 
 
@@ -65,7 +66,7 @@ class AuthController extends Controller
     public function verifyLogOtp(Request $request)
 {
     $data = $request->validate([
-        'phone_number' => 'required|exists:users,phone_number',
+    'phone_number' => ['required', new SyrianPhoneNumber, 'exists:users,phone_number'],
         'otp' => 'required|numeric',
         'fcm_token'=>[]
     ]);

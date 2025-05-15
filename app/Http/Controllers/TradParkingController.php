@@ -62,4 +62,19 @@ class TradParkingController extends Controller
         ]);
     }
 
+    public function getTodayCashEarningsPerLocation()
+    {
+        $data = $this->service->getTodayCashEarningsPerLocation();
+
+        return $this->successResponse('Cash earnings per location fetched successfully.', [
+            'total_cash_by_location' => $data,
+        ]);
+    }
+
+    public function getTodayTotalCash()
+    {
+        $data = $this->service->getTodayTotalCash();
+
+        return $this->successResponse('Total cash earnings fetched successfully.', $data);
+    }
 }
