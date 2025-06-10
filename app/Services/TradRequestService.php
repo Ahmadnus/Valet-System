@@ -139,7 +139,7 @@ class TradRequestService
              $location = Location::findOrFail($request->location_id);
 
              $amount = ValetTime::where('request_id',$id)->first();
-             dd( $amount);
+
 
              $payment = Payment::create([
                  'request_id'     => $request->id,
@@ -189,9 +189,7 @@ class TradRequestService
 {
     $request = userRequest::with('user.roles')->findOrFail($id);
 
-    if (!$request->user->getRoleNames()->contains('valet_guest')) {
-        throw new \Exception(trans('This request does not belong to a guest user.'));
-    }
+
 
     return $request;
 }

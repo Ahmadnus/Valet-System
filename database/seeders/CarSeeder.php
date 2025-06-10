@@ -21,25 +21,21 @@ class CarSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        $cartypeId = Cartype::inRandomOrder()->value('id');
+{
+    $cartypeId = Cartype::inRandomOrder()->value('id');
 
-        for ($userId = 78; $userId <= 113; $userId++) {
-            // Ensure user exists
-            $user = User::find($userId);
-            if (!$user) continue;
+    // Get all users with valet_customer or valet_guest roles
+    $users = User::role(['valet_customer', 'valet_guest'])->get();
 
-            // Create a random plate number
-            $plateNumber = strtoupper(Str::random(3)) . '-' . rand(1000, 9999);
+    foreach ($users as $user) {
+        // Create a random plate number
+        $plateNumber = strtoupper(Str::random(3)) . '-' . rand(1000, 9999);
 
-            Car::create([
-                'user_id' => $user->id,
-                'cartypeable_id' => $cartypeId,
-                'cartypeable_type' => \App\Models\CarType::class,
-                'plate_number' => $plateNumber,
-            ]);
-
-        }
-
-    }
+        Car::create([
+            'user_id' => $user->id,
+            'cartypeable_id' => $cartypeId,
+            'cartypeable_type' => \App\Models\CarType::class,
+            'plate_number' => $plateNumber,
+        ]);
+    }}
 }

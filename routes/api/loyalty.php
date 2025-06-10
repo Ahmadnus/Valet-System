@@ -17,5 +17,7 @@ Route::middleware(['auth:sanctum', 'check.role:valet_customer', Lang::class])->g
     Route::post('/generate-invoice', [LoyaltyPointController::class, 'generateInvoice']);
     Route::get('/cheak-points', [LoyaltyPointController::class, 'checkLoyaltyPoints']);
 
-    Route::post('/fee-waiver/request/{id}', [FeeWaiverController::class, 'requestFeeWaiver']);
+    Route::post('/fee-waiver/request/{requestId}', [FeeWaiverController::class, 'requestFeeWaiver']);
+
+
 });

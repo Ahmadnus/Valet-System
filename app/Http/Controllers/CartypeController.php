@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Services\CarTypeService;
 use App\Http\Requests\CartypeRequest;
+use App\Http\Requests\UpdateCartypeRequest;
 use App\Models\CarType;
 use Illuminate\Http\Request;
 
@@ -42,7 +43,7 @@ class CartypeController extends Controller
         return $this->successResponse(trans('Car type retrieved successfully'), $data);
     }
 
-    public function update(CartypeRequest $request, Cartype $cartype)
+    public function update(UpdateCartypeRequest $request, Cartype $cartype)
     {
         $lang = app()->getLocale();
         $data = $this->carTypeService->update($cartype, $request->validated(), $request->file('logo'));

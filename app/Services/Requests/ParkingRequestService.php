@@ -26,6 +26,7 @@ use App\Events\DeliveryRequestAccepted;
 use App\Events\ParkingRequestAccepted;
 use App\Events\ParkingRequestCanceled;
 use App\Events\ParkingRequestCreated;
+use App\Events\TruckingCar;
 use App\Models\Location;
 use App\Traits\app\Traits\CheckDistanceTrait;
 use Spatie\Permission\Models\Role;
@@ -231,6 +232,9 @@ public function acceptDeliveryRequest(int $requestId)
 
             Log::info("Agent $agentId accepted delivery for request $requestId.");
             event(new DeliveryRequestAccepted($request));
+
+            // ✅ بث الحدث الثاني: تتبع السيارة
+            event(new TruckingCar($agentId, 0, 0));
 
         return $request;
     });

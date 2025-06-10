@@ -106,5 +106,9 @@ public function invoices()
 {
     return $this->hasMany(Invoice::class);
 }
+public function locationse()
+{
+    return $this->belongsToMany(Location::class, 'location_agent', 'agent_id', 'location_id');
+}
 
 }

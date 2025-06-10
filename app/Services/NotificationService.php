@@ -15,11 +15,21 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class NotificationService
 {
-    public Messaging $messaging;
+
+
+
+    protected ?Messaging $messaging = null;
 
     public function __construct()
     {
-        $this->messaging = Firebase::messaging();
+        // Don't initialize Firebase here.
+    }
+
+    protected function init(): void
+    {
+        if (!$this->messaging) {
+            $this->messaging = Firebase::messaging();
+        }
     }
 
     public function sendNotification(

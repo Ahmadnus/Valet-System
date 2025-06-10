@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Requests\FindNearestLocationRequest;
 use App\Http\Requests\Location\LocationRequest;
 use App\Http\Requests\Location\LocationRequestLocationRequest;
+use App\Http\Requests\UpdateLocationRequest;
+use App\Models\User;
 
 class LocationService
 {
@@ -87,62 +89,67 @@ $location=Location::create($locationAt);
             }
         }
 
+        if ($request->has('agent_ids') && is_array($request->agent_ids)) {
+            $agents = User::whereIn('id', $request->agent_ids)->get();
 
-      if ($request->has('agent_ids') && is_array($request->agent_ids)) {
-        $alreadyAssignedAgents = DB::table('location_agent')
-            ->whereIn('agent_id', $request->agent_ids)
-            ->pluck('agent_id')
-            ->toArray();
+            $alreadyAssignedAgents = $agents->filter(function ($agent) use ($location) {
+                return $agent->locationse()
+                    ->where('location_id', '!=', $location->id) // نستخدم `location_id` هنا لأنه اسم العمود في جدول pivot
+                    ->exists();
+            });
 
-        if (!empty($alreadyAssignedAgents)) {
-            $agentIdsStr = implode(', ', $alreadyAssignedAgents);
-            throw new \Exception("Some agents are already assigned to other locations: {$agentIdsStr}");
+            if ($alreadyAssignedAgents->isNotEmpty()) {
+                $agentIdsStr = $alreadyAssignedAgents->pluck('id')->implode(', ');
+                throw new \Exception("Some agents are already assigned to other locations: {$agentIdsStr}");
+            }
+
+            $location->agents()->syncWithoutDetaching($request->agent_ids);
+            return $location->load('parkingSlots', 'agents');
+        }}
+
+        public function updateLocation(UpdateLocationRequest $request, $id)
+        {
+            $location = Location::findOrFail($id);
+
+            // تحديث بيانات الموقع
+            $location->update([
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'host_id' => $request->host_id,
+                'cost' => $request->cost,
+                'ar' => ['name' => $request->name['ar'] ?? ''],
+                'en' => ['name' => $request->name['en'] ?? ''],
+            ]);
+
+            Log::info("Location updated: {$location->id}");
+
+            // التحقق وربط الـ Agents
+            if ($request->has('agent_ids') && is_array($request->agent_ids)) {
+                $agents = User::whereIn('id', $request->agent_ids)->get();
+
+                $alreadyAssignedAgents = $agents->filter(function ($agent) use ($location) {
+                    return $agent->locationse()
+                        ->where('location_id', '!=', $location->id)
+                        ->exists();
+                });
+
+                if ($request->has('agent_ids') && is_array($request->agent_ids)) {
+                    $agents = User::whereIn('id', $request->agent_ids)->get();
+
+                    foreach ($agents as $agent) {
+                        // إزالة جميع المواقع القديمة (يجب أن يكون له موقع واحد فقط)
+                        $agent->locationse()->detach();
+                    }
+
+                    // ثم ربطهم بالموقع الجديد
+                    $location->agents()->syncWithoutDetaching($request->agent_ids);
+                }
+                // sync بدلًا من syncWithoutDetaching لأنك في update
+                $location->agents()->sync($request->agent_ids);
+            }
+
+            return $location->load('parkingSlots', 'agents');
         }
-
-        $location->agents()->attach($request->agent_ids);
-    }
-
-    DB::commit();
-
-    return $location->load('parkingSlots', 'agents');
-}
-
-public function updateLocation(LocationRequest $request, $id)
-{
-    DB::beginTransaction();
-
-    $location = Location::findOrFail($id);
-
-
-    $conflictingAgents = DB::table('location_agent')
-        ->whereIn('agent_id', $request->agent_ids)
-        ->where('location_id', '!=', $location->id)
-        ->pluck('agent_id')
-        ->toArray();
-
-    if (!empty($conflictingAgents)) {
-        $ids = implode(', ', $conflictingAgents);
-        throw new \Exception("The following agents are already assigned to other locations: $ids");
-    }
-
-    $location->update([
-        'latitude' => $request->latitude,
-        'longitude' => $request->longitude,
-        'host_id' => $request->host_id,
-        'cost' => $request->cost,
-        'ar' => ['name' => $request->name['ar'] ?? ''],
-        'en' => ['name' => $request->name['en'] ?? ''],
-    ]);
-
-    Log::info("Location updated: {$location->id}");
-
-    $location->agents()->sync($request->agent_ids);
-
-    DB::commit();
-
-    return $location->load('agents');
-}
-
         public function deleteLocation($id)
         {
             DB::beginTransaction();

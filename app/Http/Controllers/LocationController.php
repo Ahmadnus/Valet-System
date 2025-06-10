@@ -11,7 +11,7 @@ use App\Models\ParkingSlot;
 use App\Services\LocationService;
 use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
-
+use App\Http\Requests\UpdateLocationRequest;
 class LocationController extends Controller
 {  use ApiResponse;
     protected $locationService;
@@ -44,7 +44,7 @@ class LocationController extends Controller
         }
     }
 
-    public function update(LocationRequest $request, $id)
+    public function update(UpdateLocationRequest $request, $id)
     {
         try {
             $lang = app()->getLocale();

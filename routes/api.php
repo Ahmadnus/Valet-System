@@ -53,7 +53,7 @@ Route::post('/send-notification', [NotificationController::class, 'send']);
 
 
 
-
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 
 

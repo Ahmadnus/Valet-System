@@ -24,30 +24,42 @@ class StoreCarRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+    public function rules()
     {
+        $carId = $this->route('car'); // فقط عند التحديث
+        $carTypes = Cartype::pluck('id')->toArray();
 
+        return [
+            'plate_number' => [
+                'sometimes',
+                'string',
+                Rule::unique('cars', 'plate_number')->ignore($carId),
+            ],
+            'cartypeable_id' => [
+                'required',
+                'integer',
+                Rule::in($carTypes),
+            ],
+            'cartypeable_type' => [
+                'nullable',
+                'string',
+                Rule::in([\App\Models\CarType::class]), // هذا النوع المسموح به حالياً
+            ],
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ];
+    }
+    public function messages(): array
+{
+    return [
+        'plate_number.string' => trans('Plate number must be a string.'),
+        'plate_number.unique' => trans('Plate number has already been taken.'),
 
-        {
-            $carTypes = Cartype::pluck('id')->toArray();
+        'image.image' => trans('Image must be a valid image.'),
+        'image.mimes' => trans('Image must be of type: jpg, jpeg, png, webp.'),
+        'image.max' => trans('Image must not exceed 2MB.'),
 
-            return [
-                'plate_number' => 'sometimes|string|unique:cars,plate_number,' . $this->route('car'),
-                'cartypeable_type' => ['sometimes', 'string', Rule::in($carTypes)],
-                'cartypeable_id' => 'nullable|integer|exists:cartypes,id',
-                'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            ];
-        }}
-
-
-        public function messages()
-        {
-            return [
-                'plate_number.unique'      => trans('The plate number is already taken.'),
-                'cartypeable_type.in'      => trans('The selected car type is invalid.'),
-                'cartypeable_id.exists'    => trans('The selected car type ID does not exist.'),
-                'image.mimes'              => trans('The image must be a file of type: jpg, jpeg, png.'),
-                'image.max'                => trans('The image size must not exceed 2MB.'),
-            ];
-        }
+        'cartypeable_id.integer' => trans('Cartype ID must be an integer.'),
+        'cartypeable_id.exists' => trans('The selected cartype ID does not exist.'),
+    ];
+}
 }

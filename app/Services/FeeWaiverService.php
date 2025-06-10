@@ -38,24 +38,6 @@ class FeeWaiverService
 
         try {
             $this->checkRequestStatusInPreparing($requestId);
-            $request = UserRequest::find($requestId);
-
-            if (!$request) {
-                throw new \Exception(trans("Request not found."));
-            }
-
-            if ($request->user_id !== $user->id) {
-                throw new \Exception(trans("You are not authorized to request a fee waiver for this request."));
-            }
-
-            $existingRequest = FeeWaiverRequest::where('user_id', $user->id)
-                ->where('request_id', $requestId)
-                ->first();
-
-            if ($existingRequest) {
-                throw new \Exception(trans("You already sent a request."));
-            }
-
             $feeWaiver = FeeWaiverRequest::create([
                 'user_id' => $user->id,
                 'request_id' => $requestId,
@@ -65,16 +47,8 @@ class FeeWaiverService
             Log::info("User {$user->id} requested fee waiver for request {$requestId}.");
 
             $valetRequest = UserRequest::with('location')->find($requestId);
-            if (!$valetRequest || !$valetRequest->location) {
-                throw new \Exception('Request or location not found.');
-            }
-
             $hostId = $valetRequest->location->host_id;
             $valetHost = User::with('fcmTokens')->find($hostId);
-
-            if (!$valetHost || !$valetHost->hasRole('valet_host')) {
-                throw new \Exception('Valet host not found or does not have the valet_host role.');
-            }
 
             $tokens = $valetHost->fcmTokens->pluck('token')->toArray();
 

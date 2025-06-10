@@ -75,6 +75,7 @@ class AuthService
 
             return [
                 'user' => $user,
+
             ];
 
         } catch (Exception $e) {
@@ -137,9 +138,10 @@ class AuthService
 
             return ([
                 'message' => 'OTP verified successfully!',
-
+                'token' => $token,
                 'user' => new UserResource($user),
             ]);
+
 
     }
     public function verifyLogOtp($phoneNumber, $otp)

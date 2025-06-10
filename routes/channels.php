@@ -18,3 +18,8 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 //    return $user->hasCar($carId);
 
 //}, ['middleware' => ['auth:sanctum']]);*/
+Broadcast::channel('trucking.{agentId}', function ($user, $agentId) {
+    // تحقق إنو المستخدم عندو صلاحية يتابع هاد الـ agent
+    // مثال بسيط: المستخدم هو نفسه الـ agent
+    return (int) $user->id === (int) $agentId;
+});
