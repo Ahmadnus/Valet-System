@@ -4,14 +4,13 @@ use App\Http\Controllers\RatingController;
 use App\Http\Middleware\lang;
 
 
-Route::middleware(['auth:sanctum',lang::class])->group(function () {
+Route::prefix('ratings')
+    ->middleware(['auth:sanctum', Lang::class])
+    ->controller(RatingController::class)
+    ->group(function () {
+        Route::post('agent/{request_id}', 'rateAgent')
+            ->middleware('check.role:valet_customer');
 
-
-Route::post('/rate-agent/{id}', [RatingController::class, 'rateAgent'])
-    ->middleware('check.role:valet_customer');
-
-
-Route::post('/rate-customer/{id}', [RatingController::class, 'rateCustomer'])
-    ->middleware('check.role:valet_agent');
-
-});
+        Route::post('customer/{request_id}', 'rateCustomer')
+            ->middleware('check.role:valet_agent');
+    });

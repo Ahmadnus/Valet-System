@@ -10,7 +10,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/ee', function () {
-    return view('findAgent');
+    return view('firbase');
 });
 
 

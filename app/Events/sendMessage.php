@@ -33,7 +33,7 @@ class sendMessage implements  ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('chat-channel',$this->message->chat_id),
+            new Channel('chat-channel',$this->message->chat_id),
         ];
     }
     public function broadcastAs()
@@ -41,3 +41,4 @@ class sendMessage implements  ShouldBroadcast
         return 'new-message';
     }
 }
+

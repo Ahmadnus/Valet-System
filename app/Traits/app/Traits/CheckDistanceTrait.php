@@ -36,3 +36,4 @@ trait CheckDistanceTrait
         return true;
     }
 }
+

@@ -93,26 +93,6 @@ class AuthService
         }
     }
 
-    public function verifyOtp($phoneNumber, $otp)
-    {
-        dd();
-        $cachedOtp = Cache::get("otp_{$phoneNumber}");
-
-        if (!$cachedOtp) {
-            throw new Exception('OTP expired or invalid.');
-        }
-
-        if ($cachedOtp != $otp) {
-            throw new Exception('Invalid OTP.');
-        }
-
-
-        Cache::forget("otp_{$phoneNumber}");
-
-        return [
-            'message' => 'OTP verified successfully!',
-        ];
-    }
 
 
     public function login($data)
@@ -144,39 +124,33 @@ class AuthService
 
 
     }
-    public function verifyLogOtp($phoneNumber, $otp)
+    public function verifyOtpCode(string $phoneNumber, string|int $otp): array
 {
-
     $cachedOtp = Cache::get("otp_{$phoneNumber}");
 
     if (!$cachedOtp) {
-        throw new Exception('OTP expired or invalid.');
+        throw new \Exception('OTP expired or invalid.');
     }
 
     if ($cachedOtp != $otp) {
-        throw new Exception('Invalid OTP.');
+        throw new \Exception('Invalid OTP.');
     }
 
-    // Find user by phone number
     $user = User::where('phone_number', $phoneNumber)->first();
     if (!$user) {
-        throw new Exception('User not found.');
+        throw new \Exception('User not found.');
     }
 
-
-
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-
+    // إزالة OTP من الكاش بعد التحقق
     Cache::forget("otp_{$phoneNumber}");
 
-    return ([
+    return [
         'message' => 'OTP verified successfully!',
-        'token' => $token,
-        'user' => new UserResource($user),
-    ]);
+        'user' => new \App\Http\Resources\UserResource($user),
+        'token' => $user->currentAccessToken()?->plainTextToken, // أو ممكن تبعت null إذا ما في توكن بعد
+    ];
 }
+
 
     private function createAccessToken($user)
     {
@@ -193,15 +167,22 @@ class AuthService
     {
         $user = Auth::user();
 
-        $token = $request->$user?->currentAccessToken();
+        if (!$user) {
+            throw new \Exception('No authenticated user.');
+        }
+
+        $token = $user->currentAccessToken();
 
         if (!$token) {
             throw new \Exception('User already logged out or token not found.');
         }
 
-        $token->delete();
-        $user->$request->fcmTokens()->delete();
 
-        return true;
+        $token->delete();
+
+
+        $user->fcmTokens()->delete();
+
+        return ['message' => 'Logged out successfully.'];
     }
 }

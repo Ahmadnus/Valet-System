@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreRequestRequest extends FormRequest
 {
@@ -20,6 +21,13 @@ class StoreRequestRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
+     public function prepareForValidation()
+     {
+         $this->merge([
+             'user_id' => Auth::id(),
+         ]);
+     }
     public function rules(): array
 {
     return [

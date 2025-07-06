@@ -18,7 +18,7 @@ class SendParkingRequestAcceptedNotification
     $tokens = $customer->fcmTokens->pluck('token')->toArray();
 
     if (!empty($tokens)) {
-        app('App\Services\NotificationService')->sendMulticastNotification(
+        app(\App\Services\NotificationService::class)->sendNotificationToTokens(
             title: trans('Request Accepted'),
             body: trans('Your parking request has been accepted by a valet agent.'),
             tokens: $tokens,
@@ -29,9 +29,11 @@ class SendParkingRequestAcceptedNotification
             type: NotificationType::ACCEPT_REQUESTED
         );
 
-        Log::info("Sent acceptance notification for request ID {$request->id} to user ID {$customer->id}.", [
-            'tokens' => $tokens,
+        Log::info("📬 Sent parking acceptance notification for request ID {$request->id} to user ID {$customer->id}.", [
+            'tokens' => implode(',', $tokens),
         ]);
+    } else {
+        Log::warning("⚠️ No FCM tokens found for user ID {$customer->id} to send parking acceptance notification.");
     }
 }
 }

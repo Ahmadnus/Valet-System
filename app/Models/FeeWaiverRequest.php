@@ -8,5 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class FeeWaiverRequest extends Model
 {
     use HasFactory;
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'request_id',
+        'status',
+        'approved_by',
+    ];
 }

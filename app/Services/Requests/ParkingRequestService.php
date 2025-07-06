@@ -28,6 +28,8 @@ use App\Events\ParkingRequestCanceled;
 use App\Events\ParkingRequestCreated;
 use App\Events\TruckingCar;
 use App\Models\Location;
+use App\Services\Requests\ParkingRequestState\ParkingRequestContext;
+use App\Services\Requests\ParkingRequestState\States\StartState;
 use App\Traits\app\Traits\CheckDistanceTrait;
 use Spatie\Permission\Models\Role;
 
@@ -81,235 +83,16 @@ class ParkingRequestService
         });
     }
 
-    public function acceptParkingRequest(int $requestId)
-{
-    return DB::transaction(function () use ($requestId) {
-        $valetAgentId = Auth::id();
-
-        $parkingRequest = $this->getParkingRequest($requestId, Request::STATUS_PENDING);
-
-        $agentStatus = LocationAgent::where('agent_id', $valetAgentId)
-            ->where('location_id', $parkingRequest->location_id)
-            ->value('status');
-
-        if ($agentStatus !== 'available') {
-            Log::warning("Agent $valetAgentId tried to accept request $requestId but is not available.");
-            throw new \Exception(trans('You cannot accept the request because you are not available at the moment.'));
-        }
-
-
-        $parkingRequest->update([
-            'status' => Request::STATUS_ACCEPTED,
-            'valet_agent_id' => $valetAgentId,
-            'in_progress_time' => now(),
-        ]);
-
-
-        LocationAgent::where('agent_id', $valetAgentId)
-            ->where('location_id', $parkingRequest->location_id)
-            ->update(['status' => 'occupied']);
-
-        Log::info("Parking request $requestId accepted by valet agent $valetAgentId.");
-
-
-
-
-        event(new ParkingRequestAccepted($parkingRequest));
-
-        return $parkingRequest;
-    });
-}
-    public function startParkingRequest(int $requestId)
+    public function changeParkingRequestStatus(int $requestId, string $status, array $data = [])
     {
-        return DB::transaction(function () use ($requestId) {
-            $valetAgentId = Auth::id();
 
-            $parkingRequest = Request::where('id', $requestId)
-                ->where('status', Request::STATUS_ACCEPTED)
-                ->where('valet_agent_id', $valetAgentId)
-                ->with('parkingSlot')
-                ->first();
+        return DB::transaction(function () use ($requestId, $status, $data) {
 
-
-
-            $parkingRequest->update([
-                'status' => Request::STATUS_IN_PROGRESS,
-                'in_progress_time' => now(),
-            ]);
-
-            LocationAgent::where('agent_id', $valetAgentId)
-                ->where('location_id', $parkingRequest->location_id)
-                ->update(['status' => 'available']);
-
-            Log::info("Request $requestId moved to in_progress by valet agent $valetAgentId.");
-
-            return $parkingRequest;
+            $request = $this->getParkingRequest($requestId);
+            $context = new ParkingRequestContext($status);
+            return $context->handle($request, $data);
         });
     }
-    public function requestCarPreparation(int $requestId, float $latitude, float $longitude)
-    {
-        return DB::transaction(function () use ($requestId, $latitude, $longitude) {
-            $userId = Auth::id();
-
-            $parkingRequest = $this->getParkingRequest($requestId, Request::STATUS_IN_PROGRESS);
-
-            if ($parkingRequest->user_id !== $userId) {
-                Log::warning("User $userId tried to prepare a request they don't own.");
-                throw new \Exception(trans("You are not allowed to prepare this request."));
-            }
-
-            if (!$this->isUserWithinDistance($latitude, $longitude)) {
-                throw new \Exception(trans('You are too far from the nearest location. Please get closer.'));
-            }
-
-
-
-            $parkingRequest->update([
-                'status' => Request::STATUS_PREPARING,
-                'completed_time' => now(),
-                'customer_latitude' => $latitude,
-                'customer_longitude' => $longitude,
-            ]);
-
-            Log::info("User $userId requested car preparation for request $requestId.");
-
-            event(new CarPreparationRequested($parkingRequest, $latitude, $longitude));
-
-            return $parkingRequest;
-        });
-    }
-
-
-    public function requestCompleted(int $requestId)
-{
-    return DB::transaction(function () use ($requestId) {
-        $userId = Auth::id();
-
-        $parkingRequest = $this->getParkingRequest($requestId, Request::STATUS_IN_PROGRESS);
-
-        if ($parkingRequest->user_id !== $userId) {
-            Log::warning("User $userId tried to prepare a request they don't own.");
-            throw new \Exception(trans("You are not allowed to prepare this request."));
-        }
-
-        if (in_array($parkingRequest->status, [Request::STATUS_PREPARING, Request::STATUS_COMPLETED])) {
-            Log::info("Request $requestId is already being prepared or completed.");
-            throw new \Exception(trans("This request is already being prepared or has been completed."));
-        }
-
-        $parkingRequest->update([
-            'status' => Request::STATUS_COMPLETED,
-            'completed_time' => now(),
-        ]);
-
-        Log::info("User $userId completed the request $requestId.");
-
-        return $parkingRequest;
-    });
-}
-
-public function acceptDeliveryRequest(int $requestId)
-{
-    return DB::transaction(function () use ($requestId) {
-        $agentId = Auth::id();
-
-        $request = $this->getParkingRequest($requestId, Request::STATUS_PREPARING);
-
-
-
-        $request->update([
-            'status' => Request::STATUS_DELIVERING,
-        ]);
-        LocationAgent::where('agent_id', $request->valet_agent_id)
-        ->where('location_id', $request->location_id)
-        ->update(['status' => 'in_way']);
-
-        Log::info("Agent $agentId accepted delivery for request $requestId.");
-
-        LocationAgent::where('agent_id', $request->valet_agent_id)
-            ->where('location_id', $request->location_id)
-            ->update(['status' => 'in_way']);
-
-            Log::info("Agent $agentId accepted delivery for request $requestId.");
-            event(new DeliveryRequestAccepted($request));
-
-            // ✅ بث الحدث الثاني: تتبع السيارة
-            event(new TruckingCar($agentId, 0, 0));
-
-        return $request;
-    });
-}
-public function completeValet(int $id, $plateNumber)
-{
-    $this->authorizeValetAgent(Auth::id());
-
-    $parkingRequest = Request::where('id', $id)
-        ->whereHas('user.roles', function ($query) {
-            $query->where('name', 'valet_guest');
-        })
-        ->firstOrFail();
-
-    if ($parkingRequest->status !== Request::STATUS_DELIVERING) {
-        throw new Exception('Request is not in delivering status.');
-    }
-
-    return DB::transaction(function () use ($parkingRequest, $plateNumber) {
-        $car = Car::where('plate_number', $plateNumber)->first();
-
-        if (!$car) {
-            Log::warning("Plate number $plateNumber not found.");
-            throw new \Exception(trans('The plate number does not exist.'));
-        }
-
-        if ($parkingRequest->car_id !== $car->id) {
-            Log::warning("Mismatch between car in request ({$parkingRequest->car_id}) and provided plate.");
-            throw new \Exception('The plate number does not match the car in this request.');
-        }
-
-        $parkingRequest->update([
-            'status' => Request::STATUS_COMPLETED,
-        ]);
-
-        LocationAgent::where('agent_id', Auth::id())
-            ->where('location_id', $parkingRequest->location_id)
-            ->update(['status' => 'available']);
-
-        Log::info("Request {$parkingRequest->id} completed successfully by agent " . Auth::id());
-
-        return $parkingRequest;
-    });
-}
-    public function cancelParkingRequest(int $requestId, string $reason)
-    {
-        return DB::transaction(function () use ($requestId, $reason) {
-            $userId = Auth::id();
-
-
-            $parkingRequest = $this->getParkingRequest($requestId, Request::STATUS_PENDING);
-
-
-            $parkingRequest->update([
-                'status' => Request::STATUS_CANCELED,
-            ]);
-
-
-            RejectedRequest::create([
-                'user_id' => $userId,
-                'plate_number' => $parkingRequest->car->plate_number,
-                'cartypeable_type' => get_class($parkingRequest->car),
-                'cartypeable_id' => $parkingRequest->car->id,
-                'rejection_reason' => $reason,
-            ]);
-
-
-            event(new ParkingRequestCanceled($parkingRequest, $reason));
-
-            Log::info("Parking request $requestId has been canceled by user $userId. Reason: $reason.");
-            return $parkingRequest;
-        });
-    }
-
-
 ////
 
 
@@ -351,15 +134,13 @@ public function completeValet(int $id, $plateNumber)
         }
     }
 
-    private function getParkingRequest(int $requestId, string $status)
+    private function getParkingRequest(int $requestId)
     {
-        $parkingRequest = Request::where('id', $requestId)
-            ->where('status', $status)
-            ->first();
+        $parkingRequest = Request::find($requestId);
 
         if (!$parkingRequest) {
-            Log::info("Parking request $requestId not found or already processed.");
-            throw new Exception(trans("Request not found or already processed."));
+            Log::info("Parking request $requestId not found.");
+            throw new Exception(trans("Request not found."));
         }
 
         return $parkingRequest;

@@ -3,10 +3,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CarController;
 use App\Http\Middleware\lang;
 
-Route::middleware(['auth:sanctum', 'check.role:valet_customer',lang::class])->group(function () {
-    Route::get('/cars', [CarController::class, 'index']);
-    Route::get('/car/{car}', [CarController::class, 'show']);
-    Route::post('cars', [CarController::class, 'store'])->middleware('auth:api');
-    Route::put('/cars/{car}', [CarController::class, 'update']);
-    Route::delete('/cars/{car}', [CarController::class, 'destroy']);
-});
+Route::prefix('cars')
+    ->middleware(['auth:sanctum', 'check.type:Customer', Lang::class])
+    ->controller(CarController::class)
+    ->group(function () {
+        Route::get('/', 'index');                  // GET /cars
+        Route::get('/{car}', 'show');              // GET /cars/{car}
+        Route::post('/', 'store');                 // POST /cars
+        Route::put('/{car}', 'update');            // PUT /cars/{car}
+        Route::delete('/{car}', 'destroy');        // DELETE /cars/{car}
+    });

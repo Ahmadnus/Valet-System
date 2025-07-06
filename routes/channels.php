@@ -23,3 +23,12 @@ Broadcast::channel('trucking.{agentId}', function ($user, $agentId) {
     // مثال بسيط: المستخدم هو نفسه الـ agent
     return (int) $user->id === (int) $agentId;
 });
+Broadcast::channel('chat.{chatId}', function ($user, $chatId) {
+    $chat = Chat::find($chatId);
+
+    if (!$chat) {
+        return false;
+    }
+
+    return $user->id === $chat->agent_id || $user->id === $chat->customer_id;
+});

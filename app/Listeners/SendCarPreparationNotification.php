@@ -29,7 +29,7 @@ class SendCarPreparationNotification
             ->toArray();
 
         if (!empty($tokens)) {
-            app('App\Services\NotificationService')->sendMulticastNotification(
+            app('App\Services\NotificationService')->sendNotificationToTokens(
                 title: trans('Car Preparation Requested'),
                 body: trans('A customer has requested their car to be prepared.'),
                 tokens: $tokens,

@@ -11,7 +11,21 @@ class Request extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'user_id',
+        'car_id',
+        'parking_slot_id',
+        'location_id',
+        'status',
+        'fee_waived',
+        'valet_agent_id',
+        'total_hours',
+        'in_progress_time',
+        'completed_time',
+        'customer_latitude',
+        'customer_longitude',
+        'requested_by_user',
+    ];
 
     public function user()
     {

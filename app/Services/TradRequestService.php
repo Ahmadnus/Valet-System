@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use App\app\Traits\HasRequestValidation;
+use App\Models\ParkingSlot;
+
 class TradRequestService
 {
     use HasRequestValidation;
@@ -32,15 +34,17 @@ class TradRequestService
          if (!$isAuthorized) {
              throw new \Exception(trans('You are not authorized to create a parking request for this location.'));
          }
-
-             $user = User::firstOrCreate(
-                 ['phone_number' => $data['phone_number']],
-                 [
-                     'name' => null,
-                     'email' => null,
-                     'password' => bcrypt(Str::random(10)),
-                 ]
-             );
+         $guest = \App\Models\Guest::create();
+         $user = User::firstOrCreate(
+            ['phone_number' => $data['phone_number']],
+            [
+                'name' => null,
+                'email' => null,
+                'password' => bcrypt(Str::random(10)),
+                'userable_type' => \App\Models\Guest::class,
+                'userable_id' => $guest->id,
+            ]
+        );
 
              if (!$user->hasRole('valet_guest')) {
                  $role = Role::firstOrCreate(['name' => 'valet_guest']);
@@ -102,7 +106,7 @@ class TradRequestService
                  ]);
              }
 
-             LocationAgent::where('agent_id', $agentId)
+             ParkingSlot::where('id', $data['parking_slot_id'])
                  ->where('location_id', $data['location_id'])
                  ->update(['status' => 'occupied']);
 
@@ -178,9 +182,10 @@ class TradRequestService
                  'completed_time'  => now(),
              ]);
 
-             LocationAgent::where('agent_id', Auth::id())
-                 ->where('location_id', $request->location_id)
-                 ->update(['status' => 'available']);
+
+             $request->parkingSlot()->update([
+                'status' => 'available'
+            ]);
 
              return $request;
          });

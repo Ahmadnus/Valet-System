@@ -9,7 +9,13 @@ class LocationAgent extends Model
 {
     use HasFactory;
     protected $table = 'location_agent';
-        protected $guarded = [];
+
+
+    protected $fillable = [
+        'location_id',
+        'agent_id',
+        'status',
+    ];
 
 
 }

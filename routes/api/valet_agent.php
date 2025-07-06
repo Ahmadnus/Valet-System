@@ -5,8 +5,8 @@ use App\Http\Controllers\AgentController;
 use App\Http\Middleware\lang;
 
 
-Route::middleware(['auth:sanctum'])->prefix('agent')->group(function () {
-    Route::get('dashboard', [AgentController::class, 'dashboard']);
+Route::middleware(['auth:sanctum', 'check.type:Agent', Lang::class])->prefix('agent')->group(function () {
+    Route::get('myHost', [AgentController::class, 'dashboard']);
 });
 
 

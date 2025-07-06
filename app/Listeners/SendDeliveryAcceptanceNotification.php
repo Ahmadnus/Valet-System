@@ -8,9 +8,12 @@ use Illuminate\Queue\InteractsWithQueue;
 
 
 use App\NotificationType;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Log;
 class SendDeliveryAcceptanceNotification
 {
+    public function __construct(protected NotificationService $notificationService) {}
+
     public function handle(DeliveryRequestAccepted $event): void
 {
     $request = $event->request;
@@ -18,8 +21,10 @@ class SendDeliveryAcceptanceNotification
 
     $tokens = $customer->fcmTokens->pluck('token')->toArray();
 
+    Log::debug("📡 Tokens found:", $tokens);
+
     if (!empty($tokens)) {
-        app('App\Services\NotificationService')->sendMulticastNotification(
+        app(\App\Services\NotificationService::class)->sendNotificationToTokens(
             title: trans('Request Accepted'),
             body: trans('Your delivery request has been accepted by a valet agent.'),
             tokens: $tokens,
@@ -29,10 +34,7 @@ class SendDeliveryAcceptanceNotification
             ],
             type: NotificationType::ACCEPT_PREPARING
         );
-
-        Log::info("Sent acceptance notification for request ID {$request->id} to user ID {$customer->id}.", [
-            'tokens' => $tokens,
-        ]);
     }
 }
+
 }

@@ -88,23 +88,25 @@ protected function handleRatingByRequest(int $requestId, array $data, string $ex
         $tokens = $ratee->fcmTokens()->pluck('token')->toArray();
 
 
+
         if (!empty($tokens)) {
-            $this->notificationService->sendMulticastNotification(
-                title: trans('New Rating Received'),
-                body: trans('You have received a new rating from a :role.', ['role' => $raterRole]),
+            app('App\Services\NotificationService')->sendNotificationToTokens(
+                title: trans('Car Preparation Requested'),
+                body: trans('A customer has requested their car to be prepared.'),
                 tokens: $tokens,
                 data: [
                     'request_id' => $requestId,
                     'rating' => $data['rating'],
                 ],
-                type: NotificationType::NEW_VP_RATE
+                type: NotificationType::CANCEL_REQUEST
             );
-            Log::info("Sent rating notification to user ID {$ratee->id}", [
-                'tokens' => $tokens,
-            ]);
-        } else {
-            Log::warning("User ID {$ratee->id} has no FCM tokens for rating notification.");
-        }
+
+    Log::info("📬 Sent rating notification to user ID {$ratee->id}", [
+        'tokens' => implode(',', $tokens),
+    ]);
+} else {
+    Log::warning(" User ID {$ratee->id} has no FCM tokens for rating notification.");
+}
         DB::commit();
 
         Log::info('Rating created', [

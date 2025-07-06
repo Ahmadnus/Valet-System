@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'platform_manager' => \App\Http\Middleware\PlatformManagerMiddleware::class,
             'check.role' => \App\Http\Middleware\CheckUserRole::class,
+            'check.type' => \App\Http\Middleware\CheckUserType::class,
+            'check.user.allowed' => \App\Http\Middleware\CheckIfCustomerAgentManager::class,
         ]);
     })
 

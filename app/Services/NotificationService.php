@@ -2,135 +2,59 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Notification as ModelNotification;
 use App\NotificationType;
-use App\TopicType;
-use App\TopicType as AppTopicType;
 use Illuminate\Support\Facades\Log;
-use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\Notification as FirebaseNotification;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 
 class NotificationService
 {
-
-
-
-    protected ?Messaging $messaging = null;
+    protected $messaging;
 
     public function __construct()
     {
-        // Don't initialize Firebase here.
+        $this->messaging = Firebase::messaging();
     }
 
-    protected function init(): void
-    {
-        if (!$this->messaging) {
-            $this->messaging = Firebase::messaging();
-        }
-    }
-
-    public function sendNotification(
+    public function sendNotificationToTokens(
         string $title,
         string $body,
+        array|string $tokens,
         array $data = [],
-        ?User $user = null,
-        ?TopicType $topic = TopicType::GENERAL,
         NotificationType $type = NotificationType::REQUEST_PARKING_SERVICE
-    ) {
-        $payload = [
-            'title' => $title,
-            'body' => $body,
-            'type' => $type->value,
-            'extra' => json_encode($data),
-        ];
-
-        $firebaseNotification = Notification::create($title, $body);
-        $message = CloudMessage::new()
-            ->withNotification($firebaseNotification)
-            ->withData($payload);
-
-        try {
-            if ($user) {
-                $tokens = $user->fcmTokens()->pluck('token')->toArray();
-
-                if (!empty($tokens)) {
-                    // Send to all user's tokens (Multicast)
-                    $this->sendMulticastNotification($title, $body, $tokens, $data, $type);
-                } else {
-                    Log::warning("User {$user->id} has no FCM tokens.");
-                    return null;
-                }
-            } elseif ($topic) {
-                // Send to topic
-                $message = $message->toTopic('topic', $topic->value);
-                $this->messaging->send($message);
-
-            }
-            $response = $this->messaging->send($message);
-
-            Log::info('Notification sent successfully.');
-        } catch (\Throwable $th) {
-            Log::error('Notification send failed: ' . $th->getMessage());
-            return null;
+    ): void {
+        if (is_string($tokens)) {
+            $tokens = explode(',', $tokens);
         }
 
-        // Optional: store notification in the database
-        ModelNotification::create([
-            'title' => $title,
-            'body' => $body,
-            'type' => $type->value,
-            'data' => $data,
-        ]);
+        if (empty($tokens)) {
+            Log::info("📭 No tokens provided for notification.");
+            return;
+        }
 
-        return true;
-    }
-
-    public function sendMulticastNotification(
-        string $title,
-        string $body,
-        array $tokens,
-        array $data = [],
-        NotificationType $type = NotificationType::REQUEST_PARKING_SERVICE
-    ) {
-        if (empty($tokens)) return null;
-
-        $payload = [
-            'title' => $title,
-            'body' => $body,
-            'type' => $type->value,
-            'extra' => json_encode($data),
-        ];
-
-        $firebaseNotification = Notification::create($title, $body);
+        $notification = FirebaseNotification::create($title, $body);
         $message = CloudMessage::new()
-            ->withNotification($firebaseNotification)
-            ->withData($payload);
+            ->withNotification($notification)
+            ->withData([
+                'type' => $type->value,
+                'extra' => json_encode($data),
+            ]);
 
         try {
             $this->messaging->sendMulticast($message, $tokens);
-            Log::info('Multicast notification sent.');
-        } catch (\Throwable $th) {
-            Log::error('Multicast send failed: ' . $th->getMessage());
+            Log::info("✅ Notification sent to " . count($tokens) . " tokens.");
+        } catch (\Throwable $e) {
+            Log::error("❌ FCM Multicast Error: " . $e->getMessage());
         }
 
+        // Save to database
         ModelNotification::create([
             'title' => $title,
             'body' => $body,
-            'type' => $type->value,
+            'type' => $type,
             'data' => $data,
         ]);
-    }
-
-  public function registerToken(array $tokens, AppTopicType $topic = AppTopicType::GENERAL)
-    {
-        $this->messaging->subscribeToTopic($topic->value, $tokens);
-    }
-
-    public function unregisterToken(array $tokens, AppTopicType $topic = AppTopicType::GENERAL)
-    {
-        $this->messaging->unsubscribeFromTopic($topic->value, $tokens);
     }
 }
