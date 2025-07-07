@@ -30,7 +30,7 @@ class CheckPlateNumRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $plateNumber = $this->input('plate_number');
-            $requestId = $this->route('id');
+            $requestId = $this->route('userRequest');
 
             $car = Car::where('plate_number', $plateNumber)->first();
             if (!$car) {

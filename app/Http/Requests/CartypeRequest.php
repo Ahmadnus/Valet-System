@@ -4,7 +4,8 @@ namespace App\Http\Requests;
 
 use App\Traits\app\Traits\ValidationTrait;
 use Illuminate\Foundation\Http\FormRequest;
-
+use Illuminate\Validation\Validator;
+use App\Models\Cartype;
 class CartypeRequest extends FormRequest
 {
     use ValidationTrait;
@@ -29,6 +30,22 @@ class CartypeRequest extends FormRequest
             'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
     }
+
+public function withValidator(Validator $validator)
+{
+    $validator->after(function ($validator) {
+        $en = $this->input('type.en');
+        $ar = $this->input('type.ar');
+
+        if (Cartype::whereTranslation('type', $en)->exists()) {
+            $validator->errors()->add('type.en', trans('English type already exists.'));
+        }
+
+        if (Cartype::whereTranslation('type', $ar)->exists()) {
+            $validator->errors()->add('type.ar', trans('Arabic type already exists.'));
+        }
+    });
+}
     public function messages(): array
 {
     return [

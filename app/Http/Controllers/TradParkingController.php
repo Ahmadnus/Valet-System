@@ -37,7 +37,7 @@ class TradParkingController extends Controller
     {
         $parkingRequest = $this->service->park($request->validated());
 
-        return $this->successResponse('Guest parking request created and started successfully.', [
+        return $this->successResponse(trans('Guest parking request created and started successfully.'), [
             'request_id' => $parkingRequest->id,
         ]);
     }
@@ -46,7 +46,7 @@ class TradParkingController extends Controller
     {
         [$payment, $amount, $hours] = $this->service->createPayment($request->validated(), $id);
 
-        return $this->successResponse('Payment created successfully.', [
+        return $this->successResponse(trans('Payment created successfully.'), [
             'payment_id' => $payment->id,
             'amount' => $amount,
             'total_hours' => $hours,
@@ -57,7 +57,7 @@ class TradParkingController extends Controller
     {
         $parkingRequest = $this->service->complete($id, $request->validated());
 
-        return $this->successResponse('Guest parking request marked as completed.', [
+        return $this->successResponse(trans('Guest parking request marked as completed.'), [
             'request_id' => $parkingRequest->id,
         ]);
     }
@@ -66,7 +66,7 @@ class TradParkingController extends Controller
     {
         $data = $this->service->getTodayCashEarningsPerLocation();
 
-        return $this->successResponse('Cash earnings per location fetched successfully.', [
+        return $this->successResponse(trans('Cash earnings per location fetched successfully.'), [
             'total_cash_by_location' => $data,
         ]);
     }
@@ -75,6 +75,6 @@ class TradParkingController extends Controller
     {
         $data = $this->service->getTodayTotalCash();
 
-        return $this->successResponse('Total cash earnings fetched successfully.', $data);
+        return $this->successResponse(trans('Total cash earnings fetched successfully.'), $data);
     }
 }

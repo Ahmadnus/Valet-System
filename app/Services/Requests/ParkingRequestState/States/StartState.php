@@ -5,16 +5,22 @@ namespace App\Services\Requests\ParkingRequestState\States;
 use App\Models\LocationAgent;
 use App\Models\Request;
 use App\Services\Requests\ParkingRequestState\ParkingRequestStateInterface;
+use App\Traits\app\Traits\ChecksValetAgentRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class StartState implements ParkingRequestStateInterface
 {
+    use ChecksValetAgentRole;
     public function handle(Request $request, array $data = [])
     {
-        $valetAgentId = Auth::id();
+        $user = $this->ensureValetAgent('Start Request');
+        $valetAgentId = $user->id;
 
-        if ($request->status !== Request::STATUS_ACCEPTED || $request->valet_agent_id !== $valetAgentId) {
+        if (
+            $request->status !== Request::STATUS_ACCEPTED ||
+            $request->valet_agent_id !== $valetAgentId
+        ) {
             Log::warning("Agent $valetAgentId tried to start request {$request->id} but is unauthorized or status is invalid.");
             throw new \Exception(trans('You are not authorized to start this request.'));
         }

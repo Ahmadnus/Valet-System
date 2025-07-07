@@ -59,8 +59,8 @@ class StripeService implements PaymentsInterface
             'quantity' => 1,
         ]],
         'mode' => 'payment',
-        //'success_url' => url('payment-success?session_id={CHECKOUT_SESSION_ID}'),
-        'success_url' => url('/success'),
+        'success_url' => url('payment-success?session_id={CHECKOUT_SESSION_ID}'),
+        //'success_url' => url('/success'),
         'cancel_url' => url('/cancel'),
 
     ]);

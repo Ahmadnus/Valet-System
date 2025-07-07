@@ -36,7 +36,7 @@ Route::middleware(['auth:sanctum', 'check.type:Agent', Lang::class])
             });
     });
 
-// ✅ Shared route: Agent + Customer
+
 
 Route::middleware(['auth:sanctum', 'check.user.allowed', Lang::class])
     ->put('parking-requests/{userRequest}/status', [RequestController::class, 'updateStatus']);

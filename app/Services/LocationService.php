@@ -48,10 +48,10 @@ $locations = Location::selectRaw("
     }
 
     public function addLocation(LocationRequest $request)
-    {
-        DB::beginTransaction();
+{
+    DB::beginTransaction();
 
-
+    try {
         if (Location::where('host_id', $request->host_id)->exists()) {
             Log::warning("Attempted to create duplicate location: {$request->name}");
             throw new \Exception(trans("Location with this name already exists."));
@@ -66,15 +66,13 @@ $locations = Location::selectRaw("
             'en' => ['name' => $request['name']['en'] ?? ''],
         ];
 
-$location=Location::create($locationAt);
-
+        $location = Location::create($locationAt);
 
         Log::info("Location created: {$location->name}");
 
         if ($request->has('number_of_slots') && is_numeric($request->number_of_slots) && $request->number_of_slots > 0) {
             for ($i = 1; $i <= $request->number_of_slots; $i++) {
                 $slotNumber = "SLOT-$i";
-
 
                 if (ParkingSlot::where('location_id', $location->id)->where('slot_number', $slotNumber)->exists()) {
                     Log::error("Duplicate slot detected: $slotNumber for location {$location->id}");
@@ -94,7 +92,7 @@ $location=Location::create($locationAt);
 
             $alreadyAssignedAgents = $agents->filter(function ($agent) use ($location) {
                 return $agent->locationse()
-                    ->where('location_id', '!=', $location->id) // نستخدم `location_id` هنا لأنه اسم العمود في جدول pivot
+                    ->where('location_id', '!=', $location->id)
                     ->exists();
             });
 
@@ -104,10 +102,16 @@ $location=Location::create($locationAt);
             }
 
             $location->agents()->syncWithoutDetaching($request->agent_ids);
-            return $location->load('parkingSlots', 'agents');
-        }}
+        }
 
-        public function updateLocation(UpdateLocationRequest $request, $id)
+        DB::commit(); // ✅ أهم نقطة
+        return $location->load('parkingSlots', 'agents');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error("Failed to create location: " . $e->getMessage());
+        throw $e;
+    }
+}        public function updateLocation(UpdateLocationRequest $request, $id)
         {
             $location = Location::findOrFail($id);
 

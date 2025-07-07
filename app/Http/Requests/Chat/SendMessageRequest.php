@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Chat;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class SendMessageRequest extends FormRequest
 {
@@ -13,7 +14,12 @@ class SendMessageRequest extends FormRequest
     {
         return true;
     }
-
+    public function prepareForValidation()
+    {
+        $this->merge([
+            'user_id' => Auth::id(),
+        ]);
+    }
     /**
      * Get the validation rules that apply to the request.
      *

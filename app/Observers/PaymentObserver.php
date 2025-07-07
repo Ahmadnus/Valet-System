@@ -48,7 +48,7 @@ class PaymentObserver
 
 
             $loyaltyPoints = LoyaltyPoint::firstOrCreate(['user_id' => $user->id]);
-            $loyaltyPoints->points += $payment->amount / 100;
+            $loyaltyPoints->points += $payment->amount / 10;
             $loyaltyPoints->save();
 
             Log::info("Payment history and loyalty points updated for user_id: {$user->id}");

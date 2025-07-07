@@ -211,6 +211,26 @@
     "The selected car type is invalid.": "نوع السيارة المحدد غير صالح.",
     "The selected car type ID does not exist.": "معرف نوع السيارة المحدد غير موجود.",
     "The image must be a file of type: jpg, jpeg, png.": "يجب أن تكون الصورة من نوع: jpg أو jpeg أو png.",
-    "The image size must not exceed 2MB.": "يجب ألا يتجاوز حجم الصورة 2 ميغابايت."
+    "The image size must not exceed 2MB.": "يجب ألا يتجاوز حجم الصورة 2 ميغابايت.",
+    "Unauthorized: You must be a valet agent to perform this action.":"لا يمكنك ذلك",
+    "No active request found for this agent.": "لا يوجد طلب نشط لهذا الوكيل.",
+    "Car not found.": "السيارة غير موجودة.",
+    "Unauthorized access.": "وصول غير مصرح به.",
+    "Location not found.": "الموقع غير موجود.",
+    "The plate number does not match the car in this request.":"رقم اللوحة غير مطابق",
+    "You are not authorized to create a parking request for this location.": "ليس لديك صلاحية لإنشاء طلب موقف في هذا الموقع.",
+  "This request is waiting for payment. Please complete the payment first.": "هذا الطلب ينتظر الدفع. يرجى إتمام عملية الدفع أولاً.",
+  "Cannot create a payment before the parking is in progress.": "لا يمكن إنشاء الدفع قبل أن تبدأ عملية الوقوف.",
+  "A payment already exists for this request.": "يوجد دفعة بالفعل لهذا الطلب.",
+  "The plate number does not match the car in this request.": "رقم اللوحة لا يطابق السيارة المرتبطة بهذا الطلب.",
+  "Guest parking request created and started successfully.":"تم انشاء طلب الضيوف",
+  "Guest parking request created and started successfully.": "تم إنشاء طلب وقوف الضيف وبدء العملية بنجاح.",
+  "Payment created successfully.": "تم إنشاء الدفع بنجاح.",
+  "Guest parking request marked as completed.": "تم إنهاء طلب وقوف الضيف بنجاح.",
+  "Cash earnings per location fetched successfully.": "تم جلب الإيرادات النقدية لكل موقع بنجاح.",
+  "Total cash earnings fetched successfully.": "تم جلب إجمالي الإيرادات النقدية بنجاح.",
+
+    "English type already exists.": "نوع السيارة بالإنجليزية موجود مسبقًا.",
+    "Arabic type already exists.": "نوع السيارة بالعربية موجود مسبقًا."
 
 }

@@ -15,58 +15,57 @@ class TruckingService
      * Create a new class instance.
      */
 
-    public function updateLocation($data)
-    {
-        try {
+     public function updateLocation($data)
+     {
+         try {
+             DB::beginTransaction();
 
-            DB::beginTransaction();
+             $modelRequest = ModelRequest::where('valet_agent_id', Auth::id())
+                 ->whereIn('status', ['delivering', 'accepted'])
+                 ->first();
 
-            $modelRequest = ModelRequest::where('valet_agent_id', Auth::id())
-                ->whereIn('status', ['delivering', 'accepted'])
-                ->first();
+             if (!$modelRequest) {
+                 throw new Exception(trans('No active request found for this agent.'));
+             }
 
-            if (!$modelRequest) {
-                throw new Exception('No active request found for this agent');
-            }
+             $car = Car::find($modelRequest->car_id);
+             if (!$car) {
+                 throw new Exception(trans('Car not found.'));
+             }
 
-            $car = Car::find($modelRequest->car_id);
-            if (!$car) {
-                throw new Exception('Car not found');
-            }
+             if (Auth::id() !== $modelRequest->valet_agent_id) {
+                 throw new Exception(trans('Unauthorized access.'));
+             }
 
-            if (Auth::id() !==     $modelRequest->valet_agent_id) {
-                throw new Exception('Unauthorized access');
-            }
-            $loc=['agent_id' => $data['agent_id'], 'latitude' => $data['latitude'], 'longitude' => $data['longitude']];
+             $loc = [
+                 'agent_id' => $data['agent_id'],
+                 'latitude' => $data['latitude'],
+                 'longitude' => $data['longitude'],
+             ];
 
-            $location = AgentLocation::updateOrCreate(
+             $location = AgentLocation::updateOrCreate($loc);
 
-                $loc
-            );
+             DB::commit();
 
-            DB::commit();
+             broadcast(new TruckingCar($data['agent_id'], $data['latitude'], $data['longitude']));
 
+             Log::info("Location updated for agent ID {$data['agent_id']} on car ID {$car->id}");
+             return $location;
+         } catch (Exception $e) {
+             DB::rollBack();
+             Log::error("Error updating location: " . $e->getMessage());
+             throw $e;
+         }
+     }
 
-            broadcast(new TruckingCar($data['agent_id'], $data['latitude'], $data['longitude']));
+     public function getLocation($agentId)
+     {
+         $location = AgentLocation::where('agent_id', $agentId)->first();
 
-            Log::info("Location updated for agent ID {$data['agent_id']} on car ID {$car->id}");
-            return $location;
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error("Error updating location: " . $e->getMessage());
-            throw $e;
-        }
+         if (!$location) {
+             throw new Exception(trans('Location not found.'));
+         }
+
+         return $location;
+     }
     }
-    public function getLocation($agentId)
-    {
-        $location = AgentLocation::where('agent_id', $agentId)->first();
-
-        if (!$location) {
-            throw new Exception('Location not found');
-        }
-
-        return $location;
-    }
-
-
-}

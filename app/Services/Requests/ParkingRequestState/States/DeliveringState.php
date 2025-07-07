@@ -5,24 +5,22 @@ namespace App\Services\Requests\ParkingRequestState\States;
 
 use App\Events\DeliveryRequestAccepted;
 use App\Events\TruckingCar;
+use App\Models\AgentLocation;
 use App\Models\LocationAgent;
 use App\Models\Request;
 use App\Services\Requests\ParkingRequestState\ParkingRequestStateInterface;
+use App\Traits\app\Traits\ChecksValetAgentRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class DeliveringState implements ParkingRequestStateInterface
 {
 
+    use ChecksValetAgentRole;
+
     public function handle(Request $request, array $data = [])
     {
-        $user = Auth::user();
-
-        if (!$user->hasRole('valet_agent')) {
-            Log::warning("User {$user->id} attempted to deliver request {$request->id} without valet_agent role.");
-            throw new \Exception(trans('Unauthorized: You must be a valet agent to deliver this request.'));
-        }
-
+        $user = $this->ensureValetAgent('Deliver Request');
         $agentId = $user->id;
 
         if ($request->status !== Request::STATUS_PREPARING) {
@@ -48,7 +46,15 @@ class DeliveringState implements ParkingRequestStateInterface
         Log::info("Agent $agentId accepted delivery for request {$request->id}.");
 
         event(new DeliveryRequestAccepted($request));
-        event(new TruckingCar($agentId, $latitude, $longitude)); // 🔥 real location here
+
+        AgentLocation::create([
+            'agent_id' => $agentId,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ]);
+
+        event(new TruckingCar($agentId, $latitude, $longitude));
 
         return $request;
-    }}
+    }
+}

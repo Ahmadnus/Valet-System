@@ -22,13 +22,13 @@ class UpdateLocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-            'host_id' => 'required|exists:users,id',
-            'cost' => 'required|numeric|min:0',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'host_id' => 'nullable|exists:users,id',
+            'cost' => 'nullable|numeric|min:0',
 
-            'name.ar' => 'required|string|max:255',
-            'name.en' => 'required|string|max:255',
+            'name.ar' => 'nullable|string|max:255',
+            'name.en' => 'nullablec|string|max:255',
 
             'agent_ids' => 'nullable|array',
             'agent_ids.*' => 'integer|exists:users,id',
