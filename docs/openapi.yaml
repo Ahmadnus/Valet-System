@@ -1,0 +1,465 @@
+openapi: 3.0.3
+info:
+  title: Valet System API
+  description: >
+    REST API for the Valet System backend (Laravel + Sanctum).
+    All responses use a standard envelope:
+    `{ "success": bool, "message": string, "data": object|null, "code": int }`.
+    Validation errors add an `errors` object keyed by field name.
+    Authentication uses Bearer tokens issued only after OTP verification.
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000/api
+    description: Local development
+tags:
+  - name: Auth
+  - name: Cars
+    description: Customer role
+  - name: Parking Requests
+  - name: Locations
+  - name: Payments
+  - name: Loyalty
+  - name: Ratings
+  - name: Fee Waiver
+  - name: Chat
+  - name: Tracking
+  - name: Guest Valet
+    description: Agent role — traditional (guest) valet flow
+  - name: Provider
+    description: Provider role — management endpoints
+  - name: Host
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Sanctum personal access token returned by /auth/verify or /auth/verifylog.
+  schemas:
+    Envelope:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data: { nullable: true }
+        code: { type: integer }
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Envelope'
+        - type: object
+          properties:
+            errors:
+              type: object
+              additionalProperties:
+                type: array
+                items: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        fcm_token: { type: string, nullable: true }
+        type: { type: string, enum: [Customer, Agent, Host, Manager, Provider] }
+        userable_type: { type: string }
+  responses:
+    Unauthenticated:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Envelope' }
+          example: { success: false, message: "Unauthenticated.", data: null, code: 401 }
+    Forbidden:
+      description: Authenticated but wrong role / not authorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Envelope' }
+          example: { success: false, message: "This action is unauthorized.", data: null, code: 403 }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Envelope' }
+          example: { success: false, message: "Resource not found.", data: null, code: 404 }
+    Validation:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationError' }
+security:
+  - bearerAuth: []
+paths:
+  /auth/signup:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Register a customer and send an OTP (throttled 6/min)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, phone_number, password, password_confirmation]
+              properties:
+                name: { type: string, description: Letters and spaces only }
+                phone_number: { type: string, example: "+963991234567", description: Syrian mobile (+9639 + 8 digits) }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+                fcm_token: { type: string }
+      responses:
+        '201': { description: "OTP sent; no token yet", content: { application/json: { schema: { $ref: '#/components/schemas/Envelope' } } } }
+        '422': { $ref: '#/components/responses/Validation' }
+  /auth/verify:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Verify signup OTP and receive a Bearer token (throttled 6/min)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone_number, otp]
+              properties:
+                phone_number: { type: string, example: "+963991234567" }
+                otp: { type: string, example: "12345" }
+      responses:
+        '200':
+          description: Token issued
+          content:
+            application/json:
+              example:
+                success: true
+                message: "OTP verified successfully!"
+                data: { user: { id: 1, name: "Test", type: "Customer" }, token: "1|abc..." }
+                code: 200
+        '422': { $ref: '#/components/responses/Validation' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Start login — validates credentials and sends an OTP (throttled 6/min)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone_number, password]
+              properties:
+                phone_number: { type: string }
+                password: { type: string }
+                fcm_token: { type: string }
+      responses:
+        '200': { description: OTP sent }
+        '422': { $ref: '#/components/responses/Validation' }
+  /auth/verifylog:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Verify login OTP and receive a Bearer token (throttled 6/min)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone_number, otp]
+              properties:
+                phone_number: { type: string }
+                otp: { type: string }
+      responses:
+        '200': { description: Token issued }
+        '422': { $ref: '#/components/responses/Validation' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current access token
+      responses:
+        '200': { description: Logged out }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+  /cars:
+    get:
+      tags: [Cars]
+      summary: List the customer's cars (paginated)
+      responses:
+        '200': { description: OK }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Cars]
+      summary: Add a car
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plate_number, cartypeable_id]
+              properties:
+                plate_number: { type: string }
+                cartypeable_id: { type: integer }
+      responses:
+        '201': { description: Created }
+        '422': { $ref: '#/components/responses/Validation' }
+  /cars/{car}:
+    parameters:
+      - { name: car, in: path, required: true, schema: { type: integer } }
+    get:
+      tags: [Cars]
+      summary: Show a car
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Cars]
+      summary: Update a car
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Cars]
+      summary: Delete a car
+      responses:
+        '200': { description: Deleted }
+  /parking-requests:
+    post:
+      tags: [Parking Requests]
+      summary: Create a parking request (Customer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [car_id, location_id, parking_slot_id, latitude, longitude]
+              properties:
+                car_id: { type: integer }
+                location_id: { type: integer }
+                parking_slot_id: { type: integer }
+                latitude: { type: number, minimum: -90, maximum: 90 }
+                longitude: { type: number, minimum: -180, maximum: 180 }
+      responses:
+        '201': { description: Request created; nearby agents are notified }
+        '422': { $ref: '#/components/responses/Validation' }
+  /parking-requests/{userRequest}/prepare:
+    put:
+      tags: [Parking Requests]
+      summary: Ask for the car to be prepared for pickup (Customer)
+      parameters:
+        - { name: userRequest, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Preparation requested }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /parking-requests/{userRequest}/status:
+    put:
+      tags: [Parking Requests]
+      summary: Transition the request state machine (Customer/Agent/Manager, policy-checked)
+      description: >
+        Allowed transitions are enforced server-side:
+        pending → accepted → in_progress → preparing → delivering → completed;
+        canceled where permitted.
+      parameters:
+        - { name: userRequest, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [accepted, in_progress, preparing, delivering, completed, canceled] }
+                latitude: { type: number }
+                longitude: { type: number }
+                reason: { type: string, maxLength: 255 }
+                plate_number: { type: string, maxLength: 20 }
+      responses:
+        '200': { description: State updated }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/Validation' }
+  /locations/find-nearest:
+    post:
+      tags: [Locations]
+      summary: Find the nearest parking location (Customer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latitude, longitude]
+              properties:
+                latitude: { type: number }
+                longitude: { type: number }
+      responses:
+        '200': { description: Nearest location(s) }
+  /locations/find-parking/{location}:
+    get:
+      tags: [Locations]
+      summary: Show a location with parking availability (Customer)
+      parameters:
+        - { name: location, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: OK }
+  /locations:
+    get:
+      tags: [Provider]
+      summary: List locations (Provider, paginated)
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Provider]
+      summary: Add a location (Provider)
+      responses:
+        '201': { description: Created }
+  /locations/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get: { tags: [Provider], summary: Show location (Provider), responses: { '200': { description: OK } } }
+    put: { tags: [Provider], summary: Update location (Provider), responses: { '200': { description: OK } } }
+    delete: { tags: [Provider], summary: Delete location (Provider), responses: { '200': { description: Deleted } } }
+  /payments/stripe/{userRequest}:
+    get:
+      tags: [Payments]
+      summary: Create a Stripe Checkout session for a request (Customer)
+      parameters:
+        - { name: userRequest, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Checkout URL returned in data }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /payments/webhook:
+    post:
+      tags: [Payments]
+      security: []
+      summary: Stripe webhook (signature-verified; not for app use)
+      responses:
+        '200': { description: Processed }
+        '400': { description: Missing/invalid signature }
+  /payments/success:
+    get:
+      tags: [Payments]
+      security: []
+      summary: Read-only landing page after Stripe checkout (no state change)
+      responses:
+        '200': { description: OK }
+  /payments/history:
+    get:
+      tags: [Payments]
+      summary: Customer payment history (paginated)
+      responses:
+        '200': { description: OK }
+  /payments/latest:
+    get:
+      tags: [Payments]
+      summary: Customer's latest payment
+      responses:
+        '200': { description: OK }
+  /loyalty/points:
+    get: { tags: [Loyalty], summary: Show loyalty point balance (Customer), responses: { '200': { description: OK } } }
+  /loyalty/check:
+    get: { tags: [Loyalty], summary: Check whether points can be redeemed (Customer), responses: { '200': { description: OK } } }
+  /loyalty/earn:
+    post: { tags: [Loyalty], summary: Earn loyalty points (Customer), responses: { '200': { description: OK } } }
+  /loyalty/use/{request_id}:
+    post:
+      tags: [Loyalty]
+      summary: Redeem points against a request (Customer)
+      parameters: [{ name: request_id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /loyalty/generate-invoice:
+    post: { tags: [Loyalty], summary: Generate a loyalty invoice (Customer), responses: { '200': { description: OK } } }
+  /ratings/agent/{request_id}:
+    post:
+      tags: [Ratings]
+      summary: Customer rates the agent for a completed request
+      parameters: [{ name: request_id, in: path, required: true, schema: { type: integer } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating: { type: number, minimum: 1, maximum: 5 }
+                comment: { type: string, maxLength: 1000 }
+      responses:
+        '200': { description: OK }
+        '422': { $ref: '#/components/responses/Validation' }
+  /ratings/customer/{request_id}:
+    post:
+      tags: [Ratings]
+      summary: Agent rates the customer for a completed request
+      parameters: [{ name: request_id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /ratings/agents:
+    get: { tags: [Provider], summary: All agent ratings (Provider), responses: { '200': { description: OK } } }
+  /ratings/customers:
+    get: { tags: [Provider], summary: All customer ratings (Provider), responses: { '200': { description: OK } } }
+  /fee-waiver/request/{requestId}:
+    post:
+      tags: [Fee Waiver]
+      summary: Customer requests a fee waiver
+      parameters: [{ name: requestId, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /host/fee-waiver/{fee_waiver}:
+    post:
+      tags: [Host]
+      summary: Host approves or rejects a fee waiver
+      parameters: [{ name: fee_waiver, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /host/agents:
+    get: { tags: [Host], summary: List the host's agents, responses: { '200': { description: OK } } }
+  /agent/myHost:
+    get: { tags: [Guest Valet], summary: Agent dashboard / host info, responses: { '200': { description: OK } } }
+  /guest/valet/parking-requests:
+    post: { tags: [Guest Valet], summary: Park a guest car (Agent), responses: { '201': { description: Created } } }
+  /guest/valet/pay/{userRequest}:
+    post:
+      tags: [Guest Valet]
+      summary: Record a cash payment for a guest request (Agent)
+      parameters: [{ name: userRequest, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /guest/valet/complete/{userRequest}:
+    post:
+      tags: [Guest Valet]
+      summary: Complete a guest valet request (Agent)
+      parameters: [{ name: userRequest, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /earnings/today/total:
+    get: { tags: [Provider], summary: Today's total cash earnings (Provider), responses: { '200': { description: OK } } }
+  /earnings/today/locations:
+    get: { tags: [Provider], summary: Today's cash earnings per location (Provider), responses: { '200': { description: OK } } }
+  /start-chat:
+    post: { tags: [Chat], summary: Start a chat for a request, responses: { '200': { description: OK } } }
+  /send-message:
+    post: { tags: [Chat], summary: Send a chat message, responses: { '200': { description: OK } } }
+  /chat-messages/{chat_id}:
+    get:
+      tags: [Chat]
+      summary: Get messages of a chat
+      parameters: [{ name: chat_id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /tracking/update:
+    post: { tags: [Tracking], summary: Update the caller's live location, responses: { '200': { description: OK } } }
+  /tracking/agent/{agent_id}:
+    get:
+      tags: [Tracking]
+      summary: Get an agent's last known location
+      parameters: [{ name: agent_id, in: path, required: true, schema: { type: integer } }]
+      responses: { '200': { description: OK } }
+  /users:
+    get: { tags: [Provider], summary: List users (Provider, paginated), responses: { '200': { description: OK } } }
+    post: { tags: [Provider], summary: Create a user (Provider), responses: { '201': { description: Created } } }
+  /users/role-counts:
+    get: { tags: [Provider], summary: User counts by role (Provider), responses: { '200': { description: OK } } }
+  /users/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    get: { tags: [Provider], summary: Show user (Provider), responses: { '200': { description: OK } } }
+    delete: { tags: [Provider], summary: Delete user (Provider), responses: { '200': { description: Deleted } } }
+  /cartypes:
+    get: { tags: [Provider], summary: List car types (Provider), responses: { '200': { description: OK } } }
+    post: { tags: [Provider], summary: Create car type (Provider), responses: { '201': { description: Created } } }
+  /cartypes/{cartype}:
+    parameters: [{ name: cartype, in: path, required: true, schema: { type: integer } }]
+    get: { tags: [Provider], summary: Show car type, responses: { '200': { description: OK } } }
+    put: { tags: [Provider], summary: Update car type, responses: { '200': { description: OK } } }
+    delete: { tags: [Provider], summary: Delete car type, responses: { '200': { description: Deleted } } }
