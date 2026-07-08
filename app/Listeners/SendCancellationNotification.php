@@ -8,8 +8,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use App\NotificationType;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Log;
-class SendCancellationNotification
+class SendCancellationNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function handle(ParkingRequestCanceled $event): void
 {
     $request = $event->request;

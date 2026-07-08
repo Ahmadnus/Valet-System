@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class SendFeeWaiverHandledNotification
+class SendFeeWaiverHandledNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function handle(FeeWaiverHandled $event)
 {
     $statusTranslation = trans($event->status === 'approved' ? 'approved' : 'rejected');

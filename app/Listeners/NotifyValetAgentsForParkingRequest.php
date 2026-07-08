@@ -6,10 +6,14 @@ use App\Events\ParkingRequestCreated;
 use App\Models\Location;
 use App\Services\NotificationService;
 use App\NotificationType;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class NotifyValetAgentsForParkingRequest
+class NotifyValetAgentsForParkingRequest implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function __construct(protected NotificationService $notificationService) {}
 
     public function handle(ParkingRequestCreated $event): void

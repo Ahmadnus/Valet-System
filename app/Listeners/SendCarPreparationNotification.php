@@ -10,8 +10,10 @@ use App\NotificationType;
 use App\Models\Location;
 use Illuminate\Support\Facades\Log;
 
-class SendCarPreparationNotification
+class SendCarPreparationNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function handle(CarPreparationRequested $event): void
     {
         $request = $event->request;

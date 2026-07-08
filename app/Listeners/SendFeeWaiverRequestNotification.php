@@ -8,8 +8,10 @@ use Illuminate\Queue\InteractsWithQueue;
 
 use App\NotificationType;
 use Illuminate\Support\Facades\Log;
-class SendFeeWaiverRequestNotification
+class SendFeeWaiverRequestNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function handle(FeeWaiverRequested $event)
     {
         app(\App\Services\NotificationService::class)->sendNotificationToTokens(

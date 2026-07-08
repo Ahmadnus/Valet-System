@@ -71,8 +71,8 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withSchedule(function(Schedule $schedule){
-$schedule->command('parking:cancel-expired')->everySecond();
-$schedule->command('fee-waivers:auto-reject')->everySecond();
+$schedule->command('parking:cancel-expired')->everyMinute()->withoutOverlapping();
+$schedule->command('fee-waivers:auto-reject')->everyMinute()->withoutOverlapping();
 
     })
     ->create();

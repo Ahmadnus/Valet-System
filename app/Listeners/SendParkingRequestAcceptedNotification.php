@@ -8,8 +8,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use App\NotificationType;
 use Illuminate\Support\Facades\Log;
 
-class SendParkingRequestAcceptedNotification
+class SendParkingRequestAcceptedNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function handle(ParkingRequestAccepted $event): void
 {
     $request = $event->request;

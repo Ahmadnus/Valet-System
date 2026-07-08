@@ -10,8 +10,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use App\NotificationType;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Log;
-class SendDeliveryAcceptanceNotification
+class SendDeliveryAcceptanceNotification implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function __construct(protected NotificationService $notificationService) {}
 
     public function handle(DeliveryRequestAccepted $event): void
