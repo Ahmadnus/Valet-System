@@ -24,7 +24,51 @@ return Application::configure(basePath: dirname(__DIR__))
     })
 
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Render a consistent JSON envelope for API requests and, crucially,
+        // never leak internal exception messages/stack traces to clients for
+        // unexpected errors when not in debug mode.
+        $exceptions->render(function (\Throwable $e, $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null; // fall through to the default handler
+            }
+
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
+            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+            }
+
+            if ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
+                return response()->json(['success' => false, 'message' => 'This action is unauthorized.'], 403);
+            }
+
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                return response()->json(['success' => false, 'message' => 'Resource not found.'], 404);
+            }
+
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'HTTP error.',
+                ], $e->getStatusCode());
+            }
+
+            // Unexpected errors: log the detail, return a generic message
+            // unless the app is explicitly in debug mode.
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => config('app.debug') ? $e->getMessage() : 'Server error.',
+            ], 500);
+        });
     })
     ->withSchedule(function(Schedule $schedule){
 $schedule->command('parking:cancel-expired')->everySecond();
