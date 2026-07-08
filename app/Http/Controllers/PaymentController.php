@@ -11,14 +11,19 @@ use App\Models\LoyaltyPoint;
 use App\Models\ValetTime;
 use App\Models\PaymentHistory;
 use App\Services\Payments\StripeService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    use AuthorizesRequests;
+
    public function createStripePayment(UserRequest $userRequest)
     {
+        $this->authorize('pay', $userRequest);
+
         $paymentService = new PaymentService(new StripeService());
         $url =  $paymentService->createPayment($userRequest);
         return response()->json(['url' => $url]);
