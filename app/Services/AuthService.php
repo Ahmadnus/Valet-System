@@ -104,21 +104,20 @@ class AuthService
         }
         $otp = random_int(10000, 99999);
             Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
-            $token = $user->createToken("login")->plainTextToken;
 
             TelegramGateway::sendVerificationMessage($user->phone_number, [
                 'code' => $otp,
                 'ttl' => 300,
-
-
             ]);
             if(isset($data['fcm_token'])){
                 $this->storeFcmToken($user,$data['fcm_token']);
             }
 
+            // No access token is issued here: the token is only granted after
+            // the OTP is verified in verifyOtpCode(). Returning a token before
+            // verification would make the OTP step meaningless (2FA bypass).
             return ([
-                'message' => 'OTP verified successfully!',
-                'token' => $token,
+                'message' => 'OTP sent successfully. Please verify to continue.',
                 'user' => new UserResource($user),
             ]);
 
@@ -144,10 +143,14 @@ class AuthService
     // إزالة OTP من الكاش بعد التحقق
     Cache::forget("otp_{$phoneNumber}");
 
+    // The access token is issued here — only after a successful OTP check —
+    // so the OTP step actually gates authentication.
+    $token = $user->createToken('login')->plainTextToken;
+
     return [
         'message' => 'OTP verified successfully!',
         'user' => new \App\Http\Resources\UserResource($user),
-        'token' => $user->currentAccessToken()?->plainTextToken, // أو ممكن تبعت null إذا ما في توكن بعد
+        'token' => $token,
     ];
 }
 
