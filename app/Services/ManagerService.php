@@ -17,7 +17,7 @@ class ManagerService
 {
     public function getAllUsers()
     {
-        return UserResource::collection(User::with('roles')->get());
+        return UserResource::collection(User::with('roles')->paginate(15));
     }
 
     public function getUserById($id)

@@ -31,6 +31,6 @@ class AgentService
             ->where('status', '!=', Request::STATUS_PENDING)
             ->with(['user', 'car']) // if you want to include related models
             ->latest()
-            ->get();
+            ->paginate(15);
     }
 }

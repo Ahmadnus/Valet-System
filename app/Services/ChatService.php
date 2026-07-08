@@ -105,10 +105,10 @@ class ChatService
         $messages = Message::where('chat_id', $chat_id)
             ->with('user')
             ->orderBy('created_at', 'asc')
-            ->get();
+            ->paginate(20);
 
         Log::info("Messages retrieved for Chat ID {$chat_id} by User ID {$userId}");
 
-        return MessageResource::collection($chat->messages);
+        return MessageResource::collection($messages);
     }
 }
