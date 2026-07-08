@@ -13,6 +13,7 @@ class Payment extends Model
         'amount',
         'status',
         'payment_method',
+        'stripe_session_id',
         'data',
     ];
 

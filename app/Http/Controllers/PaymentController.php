@@ -23,26 +23,59 @@ class PaymentController extends Controller
         $url =  $paymentService->createPayment($userRequest);
         return response()->json(['url' => $url]);
     }
+    /**
+     * Browser landing page after Stripe Checkout. This is only informational
+     * and MUST NOT change payment state — the redirect is fully attacker
+     * controllable. Payments are confirmed exclusively via handleWebhook().
+     */
     public function paymentSuccess(Request $request)
     {
-        Log::info('Payment success request received', ['request' => $request->all()]);
+        $sessionId = $request->query('session_id');
+        $payment = $sessionId
+            ? Payment::where('stripe_session_id', $sessionId)->first()
+            : null;
 
-        $sessionId = $request->query('session_id') ?? Payment::where('status', 'pending')->latest()->value('stripe_session_id');
+        return response()->json([
+            'message' => 'Thank you. Your payment is being processed.',
+            'status' => $payment->status ?? 'unknown',
+        ]);
+    }
 
-        if (!$sessionId) {
-            return response()->json(['error' => 'Missing session ID and no pending payments found'], 400);
+    /**
+     * Stripe webhook endpoint. Verifies the Stripe signature and confirms the
+     * payment on checkout.session.completed. This is the single source of
+     * truth for marking a payment completed.
+     */
+    public function handleWebhook(Request $request)
+    {
+        $secret = config('services.stripe.webhook_secret');
+
+        try {
+            $event = \Stripe\Webhook::constructEvent(
+                $request->getContent(),
+                $request->header('Stripe-Signature'),
+                $secret
+            );
+        } catch (\UnexpectedValueException $e) {
+            Log::warning('Stripe webhook: invalid payload', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Invalid payload'], 400);
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            Log::warning('Stripe webhook: signature verification failed');
+            return response()->json(['error' => 'Invalid signature'], 400);
         }
 
-        $payment = Payment::where('stripe_session_id', $sessionId)->first();
+        if ($event->type === 'checkout.session.completed') {
+            $sessionId = $event->data->object->id;
 
-        if (!$payment) {
-            return response()->json(['error' => 'Payment record not found'], 404);
+            $payment = Payment::where('stripe_session_id', $sessionId)->first();
+
+            if ($payment && $payment->status !== 'completed') {
+                $payment->update(['status' => 'completed']); // idempotent
+                Log::info('Payment confirmed via webhook', ['payment_id' => $payment->id]);
+            }
         }
 
-
-        $payment->update(['status' => 'completed']);
-
-        return response()->json(['message' => 'Payment successful']);
+        return response()->json(['received' => true]);
     }
     public function showPaymentHistory()
     {
