@@ -36,7 +36,7 @@ class CanceledState implements ParkingRequestStateInterface
             'plate_number' => $request->car->plate_number,
             'cartypeable_type' => get_class($request->car),
             'cartypeable_id' => $request->car->id,
-            'reason' => $reason,
+            'rejection_reason' => $reason ?? '',
         ]);
 
         event(new ParkingRequestCanceled($request, $reason));
