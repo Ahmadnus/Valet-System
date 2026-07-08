@@ -59,7 +59,7 @@ class AuthService
             }
 
 
-            $otp = mt_rand(10000, 99999);
+            $otp = random_int(10000, 99999);
             Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
             TelegramGateway::sendVerificationMessage($user->phone_number, [
                 'code' => $otp,
@@ -102,7 +102,7 @@ class AuthService
         if (!Hash::check($data['password'], $user->password)) {
             throw new Exception('invalid phone or password');
         }
-        $otp = mt_rand(10000, 99999);
+        $otp = random_int(10000, 99999);
             Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
             $token = $user->createToken("login")->plainTextToken;
 
@@ -132,7 +132,7 @@ class AuthService
         throw new \Exception('OTP expired or invalid.');
     }
 
-    if ($cachedOtp != $otp) {
+    if (!hash_equals((string) $cachedOtp, (string) $otp)) {
         throw new \Exception('Invalid OTP.');
     }
 
