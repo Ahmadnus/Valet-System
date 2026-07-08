@@ -84,6 +84,19 @@ Routes are split by domain under `routes/api/`: `auth`, `request`, `car`,
 `rating`, `payment`, `loyalty`, `chat`, `tracking`, and the valet role groups.
 Run `php artisan route:list` for the full, current list.
 
+## API documentation
+
+- OpenAPI 3 specification: [`docs/openapi.yaml`](docs/openapi.yaml) — view it in
+  Swagger UI or any OpenAPI viewer.
+- Postman collection: [`docs/Valet-System.postman_collection.json`](docs/Valet-System.postman_collection.json) —
+  import into Postman, then set the `base_url` and `token` collection variables.
+  Bearer auth is applied at the collection level; auth and webhook endpoints
+  override it with no-auth.
+
+All endpoints return the standard envelope
+`{ "success": bool, "message": string, "data": object|null, "code": int }`,
+with an additional `errors` object on `422` validation failures.
+
 ## Testing
 
 ```bash
