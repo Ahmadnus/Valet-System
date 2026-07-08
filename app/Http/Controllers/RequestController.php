@@ -44,13 +44,13 @@ class RequestController extends Controller
         }
     }
 
-    public function updateStatus(UpdateParkingRequestStatusRequest $request, int $requestId)
+    public function updateStatus(UpdateParkingRequestStatusRequest $request, int $userRequest)
     {
         try {
             $validated = $request->validated(); // استخراج البيانات المتحققة فقط
 
             $parkingRequest = $this->parkingRequestService->changeParkingRequestStatus(
-                $requestId,
+                $userRequest,
                 $validated['status'] ?? null,
                 $validated
             );
