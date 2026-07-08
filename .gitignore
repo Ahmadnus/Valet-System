@@ -22,3 +22,4 @@ yarn-error.log
 
 # Secrets / credentials
 firebase_config.json
+storage/firebase-config.json
