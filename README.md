@@ -1,199 +1,102 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Valet-System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel 11 REST API for a valet-parking platform. Customers request valet
+parking at a location and slot; valet agents accept, park, prepare, and deliver
+cars; managers, hosts, and providers administer locations and staff. The system
+also covers Stripe payments, loyalty points, fee-waiver requests, ratings,
+real-time chat, and Firebase push notifications.
 
-## About Laravel
+> **Status:** work in progress. See [Security notes](#security-notes) before
+> deploying anywhere public.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP 8.2+, Laravel 11
+- Sanctum (API token auth) + spatie/laravel-permission (roles)
+- Stripe (payments), Firebase Cloud Messaging (push), Telegram Gateway (OTP)
+- spatie/laravel-medialibrary, astrotomic/laravel-translatable
+- Pusher (broadcasting), SQLite by default (any Laravel-supported DB works)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Architecture
 
-## Learning Laravel
+Request flow: `Route → Sanctum auth → type middleware → FormRequest validation →
+Service (in a DB transaction) → API Resource → JSON`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Controllers** (`app/Http/Controllers`) stay thin and delegate to services.
+- **Services** (`app/Services`) hold the business logic.
+- **State pattern** drives the parking-request lifecycle
+  (`app/Services/Requests/ParkingRequestState`).
+- **Strategy pattern** abstracts payment providers (`PaymentsInterface`).
+- **Events/Listeners** fan out notifications; **Observers** react to model changes.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Requirements
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP >= 8.2 with the extensions Laravel 11 requires
+- Composer 2
+- A Firebase service-account JSON (push notifications)
+- Stripe API keys and a Telegram Gateway token (payments / OTP)
 
-## Laravel Sponsors
+## Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone https://github.com/Ahmadnus/Valet-System.git
+cd Valet-System
+composer install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite   # default DB; or configure another in .env
+php artisan migrate --seed
+php artisan serve
+```
 
-### Premium Partners
+### Firebase credentials (required to boot)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+The app resolves Firebase Messaging at boot, so it will not start without
+credentials. Provide a service-account JSON **out of band** (it must never be
+committed) and point `.env` at it:
 
-## Contributing
+```env
+FIREBASE_CREDENTIALS=/absolute/path/to/firebase_service_account.json
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Relevant environment variables
 
-## Code of Conduct
+```env
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=        # see roadmap: webhook verification
+TELEGRAM_GATEWAY_TOKEN=
+FIREBASE_CREDENTIALS=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Authentication flow
 
-## Security Vulnerabilities
+1. `POST /api/auth/signup` — creates the user and sends a 5-digit OTP via Telegram.
+2. `POST /api/auth/verify` — confirms the signup OTP.
+3. `POST /api/auth/login` — verifies the password and sends a login OTP.
+4. `POST /api/auth/verifylog` — confirms the login OTP.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Authenticated requests send `Authorization: Bearer <sanctum-token>`. Set the
+`Accept-Language` header (`en`/`ar`) for localized responses.
+
+## API routes
+
+Routes are split by domain under `routes/api/`: `auth`, `request`, `car`,
+`rating`, `payment`, `loyalty`, `chat`, `tracking`, and the valet role groups.
+Run `php artisan route:list` for the full, current list.
+
+## Testing
+
+```bash
+php artisan test
+```
+
+## Security notes
+
+- Never commit `firebase_config.json` or any credential file; provide them via
+  environment/secret storage.
+- Payment confirmation and full OTP enforcement are being hardened — do not run
+  this against real payment data until those items are complete.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
-
-🚗 Valet Parking System (Laravel Backend)
-Built on top of the Laravel framework to manage smart valet operations.
-
-📚 Table of Contents
-
-Overview
-
-Features
-
-Tech Stack
-
-Notifications
-
-Getting Started
-
-Contributing
-
-License
-
-Overview
-The Valet Parking System is a Laravel-based backend solution that supports electronic and traditional valet parking services. It handles authentication, parking requests, guest user handling, role-based actions, payments, notifications, and real-time features. The platform supports six user roles, each with specific permissions.
-
-Features
-Authentication via phone number with confirmation through a Telegram gateway
-
-User roles & permissions:
-
-Valet Customer
-
-Valet Guest
-
-Valet Agent
-
-Valet Host
-
-Valet Provider
-
-Platform Manager
-
-Car management by users (create, update, delete, upload car images)
-
-Parking request system (electronic & traditional)
-
-Payment integration (Stripe & cash)
-
-Loyalty points system (1 point per $1 spent; 10 points = $1 discount)
-
-Fee waiver request system (approved by Host or Provider)
-
-Real-time system updates:
-
-Notifications via Firebase Cloud Messaging (FCM)
-
-Live chat (Pusher)
-
-Scheduled jobs for system automation:
-
-Cancel pending requests after 30 minutes
-
-Cancel unresponded fee waiver requests after 5 minutes
-
-Multilingual support via Astrotomic Translatable
-
-Media management via Spatie Media Library
-
-Role-based access using Spatie Permission
-
-Tech Stack
-Laravel (PHP framework)
-
-MySQL (Database)
-
-Firebase Cloud Messaging (FCM)
-
-Pusher (for real-time chat)
-
-Telegram gateway (SMS replacement)
-
-Stripe (payment)
-
-Spatie Media Library & Spatie Permission
-
-Astrotomic Translatable (multilingual support)
-
-Notifications
-Notifications are handled using Firebase Cloud Messaging (FCM), integrated with queued jobs for background delivery. The system sends notifications for events such as:
-
-Parking service requests
-
-Car retrieval requests
-
-Rating notifications
-
-Payment confirmations
-
-Fee waiver requests and responses
-
-Request status changes
-
-Tokens are managed per user, stored in an fcm_token table. Enum classes like NotificationType and TopicType are used to structure and categorize notifications.
-
-Getting Started
-To get the project up and running locally, follow the steps below:
-
-1-Clone the Repository:
-
-git clone https://gitlab.com/blankdiff2/valet-system
-cd valet-parking-system
-
-2-Install Dependencies Install the necessary PHP dependencies using Composer:
-composer install
-
-3-Set Up the Environment Copy the .env.example file to .env:
-cp .env.example .env
-
-4-Generate Application Key Laravel requires an application key, which you can generate by running:
-
-php artisan key:generate
-
-5-Set Up the Database
-
-Create a database in MySQL for the project.
-
-Update the .env file with your database credentials.
-
-6-Run Migrations After setting up the database, run the migrations to create the necessary tables:
-php artisan migrate
-
-7-Run the Application You can now serve the application locally using the following command:
-
-php artisan serve
+MIT.
