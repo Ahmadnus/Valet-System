@@ -12,8 +12,8 @@ Route::prefix('tracking')
         Route::post('/update', 'updateLocation')
             ->middleware(['auth:sanctum', 'check.type:Customer', Lang::class]); // POST /tracking/update
 
-        // Get agent's latest location - public (or protected if needed)
+        // Get agent's latest location - authenticated users only
         Route::get('/agent/{agent_id}', 'getLocation')
-            ->middleware([Lang::class]); // GET /tracking/agent/{agent_id}
+            ->middleware(['auth:sanctum', Lang::class]); // GET /tracking/agent/{agent_id}
     });
 
