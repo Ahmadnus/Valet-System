@@ -9,6 +9,38 @@ of the repository before the audit.
 
 ---
 
+## Mobile-Readiness Fixes (post-audit)
+
+### Two broken endpoints implemented
+- **Files:** `app/Http/Controllers/RequestController.php`,
+  `app/Http/Controllers/PaymentController.php`
+- **Problem:** `PUT /api/parking-requests/{userRequest}/prepare`
+  (`requestCarPreparation`) and `GET /api/payments/latest` (`showLatestPayment`)
+  were routed to controller methods that did not exist — every call returned a
+  500. The prepare route is a core customer flow.
+- **Change:** Implemented `requestCarPreparation` (drives the request to
+  `preparing` through the state machine via the `PreparingCarRequests` form
+  request) and `showLatestPayment` (returns the latest valet time + invoice).
+- **Verified:** both routes now resolve (401 when unauthenticated, JSON
+  envelope) instead of 500.
+
+### Standardized API response envelope
+- **Files:** `bootstrap/app.php`, `app/Http/Controllers/AuthController.php`,
+  `app/Http/Controllers/PaymentController.php`
+- **Problem:** The API returned at least four different shapes. Worst,
+  `AuthController::signup` returned a raw array and returned error messages as
+  plain strings with HTTP 200; `login`/`verify` returned bare bodies; the
+  exception handler used a different shape than the `ApiResponse` trait.
+- **Change:** Adopted the `ApiResponse` envelope `{ success, message, data, code }`
+  (plus `errors` for validation) everywhere: the global exception handler now
+  emits it, and `AuthController` and `PaymentController` were converted to use
+  the `successResponse`/`errorResponse` helpers. Bad login now returns 401 in the
+  envelope; validation returns 422 with `errors`.
+- **Impact:** A single response contract a mobile client can model against.
+- **Note (breaking):** auth responses now nest `user`/`token` under `data`.
+
+---
+
 ## Security Fixes
 
 ### Leaked Firebase service-account credentials removed from version control

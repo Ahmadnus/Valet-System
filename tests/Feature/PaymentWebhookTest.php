@@ -41,7 +41,7 @@ class PaymentWebhookTest extends TestCase
         // matching session it simply reports an unknown status and 200.
         $this->getJson('/api/payments/success?session_id=cs_does_not_exist')
             ->assertOk()
-            ->assertJson(['status' => 'unknown']);
+            ->assertJson(['data' => ['status' => 'unknown']]);
 
         $this->assertSame(0, Payment::where('status', 'completed')->count());
     }

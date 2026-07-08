@@ -32,42 +32,43 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null; // fall through to the default handler
             }
 
-            if ($e instanceof \Illuminate\Validation\ValidationException) {
-                return response()->json([
+            // Canonical API error envelope, matching the ApiResponse trait:
+            // { success, message, data, code } (+ errors for validation).
+            $envelope = function (string $message, int $status, array $extra = []) {
+                return response()->json(array_merge([
                     'success' => false,
-                    'message' => 'Validation failed.',
-                    'errors' => $e->errors(),
-                ], 422);
+                    'message' => $message,
+                    'data' => null,
+                    'code' => $status,
+                ], $extra), $status);
+            };
+
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return $envelope('Validation failed.', 422, ['errors' => $e->errors()]);
             }
 
             if ($e instanceof \Illuminate\Auth\AuthenticationException) {
-                return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+                return $envelope('Unauthenticated.', 401);
             }
 
             if ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
-                return response()->json(['success' => false, 'message' => 'This action is unauthorized.'], 403);
+                return $envelope('This action is unauthorized.', 403);
             }
 
             if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
                 || $e instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-                return response()->json(['success' => false, 'message' => 'Resource not found.'], 404);
+                return $envelope('Resource not found.', 404);
             }
 
             if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage() ?: 'HTTP error.',
-                ], $e->getStatusCode());
+                return $envelope($e->getMessage() ?: 'HTTP error.', $e->getStatusCode());
             }
 
             // Unexpected errors: log the detail, return a generic message
             // unless the app is explicitly in debug mode.
             report($e);
 
-            return response()->json([
-                'success' => false,
-                'message' => config('app.debug') ? $e->getMessage() : 'Server error.',
-            ], 500);
+            return $envelope(config('app.debug') ? $e->getMessage() : 'Server error.', 500);
         });
     })
     ->withSchedule(function(Schedule $schedule){

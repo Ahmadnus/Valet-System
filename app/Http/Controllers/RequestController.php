@@ -65,5 +65,21 @@ class RequestController extends Controller
         }
     }
 
+    public function requestCarPreparation(PreparingCarRequests $request, int $userRequest)
+    {
+        try {
+            $parkingRequest = $this->parkingRequestService->changeParkingRequestStatus(
+                $userRequest,
+                'preparing',
+                $request->validated()
+            );
 
+            return $this->successResponse(
+                trans('Car preparation requested successfully'),
+                new RequestResource($parkingRequest)
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
+    }
 }

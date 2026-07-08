@@ -37,8 +37,7 @@ class AuthOtpTest extends TestCase
         ]);
 
         $response->assertOk();
-        $response->assertJsonMissing(['token' => true]);
-        $this->assertArrayNotHasKey('token', $response->json());
+        $this->assertNull($response->json('data.token'));
         $this->assertSame(0, $user->fresh()->tokens()->count());
     }
 
@@ -61,7 +60,7 @@ class AuthOtpTest extends TestCase
         ]);
 
         $response->assertOk();
-        $this->assertNotEmpty($response->json('token'));
+        $this->assertNotEmpty($response->json('data.token'));
         $this->assertSame(1, $user->fresh()->tokens()->count());
     }
 

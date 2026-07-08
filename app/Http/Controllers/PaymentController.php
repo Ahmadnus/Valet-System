@@ -11,6 +11,7 @@ use App\Models\LoyaltyPoint;
 use App\Models\ValetTime;
 use App\Models\PaymentHistory;
 use App\Services\Payments\StripeService;
+use App\app\Traits\ApiResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    use ApiResponse;
     use AuthorizesRequests;
 
    public function createStripePayment(UserRequest $userRequest)
@@ -26,7 +28,8 @@ class PaymentController extends Controller
 
         $paymentService = new PaymentService(new StripeService());
         $url =  $paymentService->createPayment($userRequest);
-        return response()->json(['url' => $url]);
+
+        return $this->successResponse(trans('Stripe checkout session created.'), ['url' => $url]);
     }
     /**
      * Browser landing page after Stripe Checkout. This is only informational
@@ -40,10 +43,10 @@ class PaymentController extends Controller
             ? Payment::where('stripe_session_id', $sessionId)->first()
             : null;
 
-        return response()->json([
-            'message' => 'Thank you. Your payment is being processed.',
-            'status' => $payment->status ?? 'unknown',
-        ]);
+        return $this->successResponse(
+            trans('Thank you. Your payment is being processed.'),
+            ['status' => $payment->status ?? 'unknown']
+        );
     }
 
     /**
@@ -92,31 +95,29 @@ class PaymentController extends Controller
         // Fetch the price before discount if valet_time still exists
         $valetTime = ValetTime::where('user_id', $user->id)->first();
 
-        return [
+        return $this->successResponse(trans('Payment history retrieved.'), [
             'last_invoice' => $invoice,
             'used_loyalty_points' => $invoice && $invoice->points_used > 0,
             'points_used' => $invoice->points_used ?? 0,
             'total_amount' => $invoice->total_amount ?? ($valetTime->price ?? 0),
             'remaining_balance' => $invoice->remaining_balance ?? ($valetTime->price ?? 0),
-        ];
+        ]);
     }
 
-    public function showPay()
+    public function showLatestPayment()
     {
         $user = Auth::user();
 
-        // Get the latest valet time (payment)
-        $payment = ValetTime::where('user_id', $user->id)->first();
-
-        // Get latest invoice (if any)
+        // Latest valet time (the current amount owed) and latest invoice.
+        $payment = ValetTime::where('user_id', $user->id)->latest()->first();
         $invoice = Invoice::where('user_id', $user->id)->latest()->first();
 
-        return [
+        return $this->successResponse(trans('Latest payment retrieved.'), [
             'payment' => $payment,
             'invoice' => $invoice,
             'used_loyalty_points' => $invoice && $invoice->points_used > 0,
             'points_used' => $invoice->points_used ?? 0,
             'remaining_balance' => $invoice->remaining_balance ?? ($payment->price ?? 0),
-        ];
+        ]);
     }
 }
