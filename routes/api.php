@@ -48,11 +48,6 @@ Route::get('/user', function (Request $request) {
 
 
 
-Route::post('/send-notification', [NotificationController::class, 'send']);
-
-
-
-
 Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
 
