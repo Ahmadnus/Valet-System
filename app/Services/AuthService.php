@@ -99,8 +99,8 @@ class AuthService
     {
         $user = User::where('phone_number', $data['phone_number'])->first();
 
-        if (!Hash::check($data['password'], $user->password)) {
-            throw new Exception('invalid phone or password');
+        if (!$user || !Hash::check($data['password'], $user->password)) {
+            throw new \Illuminate\Auth\AuthenticationException('Invalid phone number or password.');
         }
         $otp = random_int(10000, 99999);
             Cache::put("otp_{$user->phone_number}", $otp, now()->addMinutes(5));
