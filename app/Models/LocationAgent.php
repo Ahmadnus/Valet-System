@@ -17,5 +17,13 @@ class LocationAgent extends Model
         'status',
     ];
 
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
 
+    public function agent()
+    {
+        return $this->belongsTo(User::class, 'agent_id');
+    }
 }

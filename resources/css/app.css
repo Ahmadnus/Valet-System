@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+    --color-navy-950: #05070d;
+    --color-navy-900: #0a0e1a;
+    --color-navy-800: #0f1524;
+    --color-navy-700: #161d31;
+    --color-navy-600: #1e2740;
+    --color-navy-500: #2a3555;
+
+    --color-cyan-glow: #22d3ee;
+    --color-gold-glow: #eab976;
+
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+    body {
+        background-color: var(--color-navy-950);
+        color: #e6ebf5;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    .glass-card {
+        @apply relative rounded-2xl border border-white/5 bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.4)];
+    }
+
+    .stat-card {
+        @apply relative rounded-2xl border border-white/5 bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-5 flex flex-col gap-2 overflow-hidden;
+    }
+
+    .accent-ring {
+        @apply ring-1 ring-inset ring-cyan-400/20;
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 text-sm font-medium text-navy-950 shadow-[0_0_20px_rgba(34,211,238,0.35)] transition hover:shadow-[0_0_30px_rgba(34,211,238,0.55)] active:scale-[0.98];
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10;
+    }
+
+    .badge {
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+    }
+
+    .badge-pending { @apply bg-amber-400/10 text-amber-300 ring-1 ring-inset ring-amber-400/20; }
+    .badge-active { @apply bg-cyan-400/10 text-cyan-300 ring-1 ring-inset ring-cyan-400/20; }
+    .badge-success { @apply bg-emerald-400/10 text-emerald-300 ring-1 ring-inset ring-emerald-400/20; }
+    .badge-danger { @apply bg-rose-400/10 text-rose-300 ring-1 ring-inset ring-rose-400/20; }
+    .badge-gold { @apply bg-amber-300/10 text-amber-200 ring-1 ring-inset ring-amber-300/25; }
+
+    .nav-link {
+        @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/5 hover:text-slate-100;
+    }
+
+    .nav-link.active {
+        @apply bg-gradient-to-r from-cyan-500/15 to-transparent text-cyan-300 ring-1 ring-inset ring-cyan-400/20;
+    }
+
+    .table-shell {
+        @apply relative rounded-2xl border border-white/5 bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden;
+    }
+
+    .table-shell table {
+        @apply w-full text-left text-sm;
+    }
+
+    .table-shell thead {
+        @apply bg-white/[0.03] text-xs uppercase tracking-wider text-slate-500;
+    }
+
+    .table-shell th {
+        @apply px-4 py-3 font-medium;
+    }
+
+    .table-shell td {
+        @apply px-4 py-3 text-slate-200;
+    }
+
+    .table-shell tbody tr {
+        @apply border-t border-white/5 transition hover:bg-white/[0.03];
+    }
+}

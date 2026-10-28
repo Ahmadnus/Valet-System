@@ -45,6 +45,23 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+if (config('app.debug')) {
+    // Local-dev convenience only: hands back the cached OTP so the mobile
+    // app can auto-fill it without needing a real SMS/Telegram gateway.
+    // Never reachable when APP_DEBUG=false.
+    Route::get('/auth/dev-otp', function (Request $request) {
+        $phone = $request->query('phone_number');
+        $otp = \Illuminate\Support\Facades\Cache::get("otp_{$phone}");
+
+        return response()->json([
+            'success' => (bool) $otp,
+            'message' => $otp ? 'OTP found.' : 'No pending OTP for this number.',
+            'data' => ['otp' => $otp],
+            'code' => 200,
+        ]);
+    });
+}
+
 
 
 

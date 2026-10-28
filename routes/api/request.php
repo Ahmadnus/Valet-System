@@ -12,7 +12,9 @@ Route::middleware(['auth:sanctum', 'check.type:Customer', Lang::class])
         Route::prefix('parking-requests')
             ->controller(RequestController::class)
             ->group(function () {
+                Route::get('/', 'myRequests');
                 Route::post('/', 'createParkingRequest');
+                Route::get('{userRequest}', 'show');
                 Route::put('{userRequest}/prepare', 'requestCarPreparation');
             });
 

@@ -61,6 +61,11 @@ class User extends Authenticatable
         return $this->hasMany(Request::class);
     }
 
+    public function assignedRequests()
+    {
+        return $this->hasMany(Request::class, 'valet_agent_id');
+    }
+
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
@@ -80,6 +85,11 @@ class User extends Authenticatable
     public function ratings()
     {
         return $this->hasMany(Rating::class);
+    }
+
+    public function ratingsReceived()
+    {
+        return $this->hasMany(Rating::class, 'ratee_id');
     }
     public function userable()
     {

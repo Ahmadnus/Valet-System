@@ -22,8 +22,10 @@ class RequestResource extends JsonResource
             'location' => $this->whenLoaded('location', new LocationResource($this->location)),
             'status' => $this->status,
             'parking_slot' => $this->whenLoaded('parkingSlot',  new ParkingSlotResource($this->parkingSlot)),
+            'valet_agent' => $this->whenLoaded('valetAgent', fn () => $this->valetAgent ? new UserResource($this->valetAgent) : null),
             'in_progress_time' => $this->in_progress_time,
             'completed_time' => $this->completed_time,
+            'created_at' => $this->created_at,
         ];
     }
 }
